@@ -1,0 +1,284 @@
+// Sigmaplayer Firmware
+
+kernel.print = "F/W ver " + kernel.firmware_version
+kernel.print = "MMSL ver " + kernel.mmsl_version
+kernel.print = "TV: " + screen.tvstandard
+
+// define our colors:
+colors.darkblue = 5
+colors.blueback = 6; // =15
+colors.lightblueback = 64;
+colors.yellow = 245;
+colors.yellowback = 242;
+colors.grey = 153;
+colors.lightgrey = 247;
+colors.white = 255;
+
+set_def_palette = 1
+
+on set_def_palette == 1
+	screen.palette = "img/pal.act"
+
+	// define transparent color:
+	screen.palidx = 0
+	screen.palalpha = 0
+	screen.palidx = 6
+	screen.palalpha = 0x66
+	screen.palidx = 15
+	screen.palalpha = 0x80
+	screen.palidx = 64
+	screen.palalpha = 0xc0
+	screen.palidx = 153
+	screen.palalpha = 0x50
+	screen.palidx = 242
+	screen.palalpha = 0x80
+
+	screen.color = colors.white
+	screen.trcolor = 0
+
+def_screen_back = "img/logontsc.jpg"
+screen.back = def_screen_back
+saved_tvout = settings.tvout
+saved_display_pad = ""
+allow_balloons = 1
+
+
+
+////////////////////////////////////////////////////
+// Set fonts & charsets:
+on set_lang == 1
+	font1 = "fonts/West23.fnt"
+	font2 = "fonts/West36.fnt"
+	iso_charset = "iso8859-1"
+	subt_charset = "iso8859-1"
+on settings.user3 == 0	// cp1251
+	cyr_iso_charset = "cp1251"
+on settings.user3 == 1	// koi8-r
+	cyr_iso_charset = "koi8-r"
+on settings.user1 == 1 // 'ru'
+	on set_lang == 1
+		font1 = "fonts/Cyr24.fnt"
+		font2 = "fonts/Cyr27.fnt"
+		iso_charset = cyr_iso_charset
+		subt_charset = cyr_iso_charset
+on settings.user1 == 5 // 'pl'
+	on set_lang == 1
+		font1 = "fonts/Central23.fnt"
+		font2 = "fonts/Central38.fnt"
+		iso_charset = "iso8859-2"
+		subt_charset = "iso8859-2"
+
+settings.user3 = settings.user3
+set_lang = 1
+msgfont = "fonts/Cyr24.fnt"
+screen.font = font1
+
+/// --- SigmaPlayer PATCH for Russian defaults:
+check_default_lang = 1
+on settings.user16 == 0
+	on check_default_lang == 1
+		kernel.print = "Setting Russian defaults"
+		settings.user1 = 1	// 'ru'
+		settings.user16 = 1
+		set_lang = 1
+		screen.font = font1
+/// ---
+
+restore_timer_balloon = ""
+
+startup = 1
+redraw_iso = 0
+allow_zoom = 0
+allow_osd = 0
+
+load_adjustments = 1
+adjustment = 0
+player_source_set = 0
+
+// screen saver
+include "ssaver.mmsl"
+
+////////////////////////////////////////////////////
+// tray open/close & media detect
+on pad.key == "eject"
+	do_eject = 1
+on drive.tray == "open"
+	on startup == 1
+		open_tray = 1
+	
+	on do_eject == 1
+		do_eject = 0
+		pad.clear = "all"
+		pad.display = "CLOSE"
+		show_timer_balloon = "close"
+		drive.tray = "toggle"
+
+on drive.tray == "close"
+	on do_eject == 1
+		do_eject = 0
+		open_tray = 1
+		drive.tray = "toggle"
+
+/////////////////////////////
+// OPEN tray
+on open_tray == 1
+	last_tray = "open"
+	
+	cleanup_all = 1
+	
+	pad.display = "OPEN"
+	show_static_balloon = "open"
+
+on last_tray == "open"
+	on drive.tray == "close"
+		last_tray = "close"
+		show_balloon = ""
+		pad.clear = "all"
+		pad.display = "CLOSE"
+
+on drive.tray != "open"
+	on drive.mediatype == "none"
+		dvd = 0
+		iso = 0
+		pad.clear = "all"
+		pad.display = "no dISC"
+		screen.preload = ""
+
+on cleanup_all == 1
+	delete .group != "mute" && .group != "scr"
+	dvd = 0
+	iso = 0
+	setup = 0
+	allow_zoom = 0
+	cancel_zoom = 1
+	cancel_osd = 1
+	cancel_popup = 1
+	adjustment = 0
+	player_source_set = 0
+	screen.update = 1
+	pad.clear = "all"
+	screen.back = def_screen_back
+	screen.preload = ""		// clear picture cache (memory saving)
+
+
+//////////////////////////////////////////////////////
+on pad.key == "setup"
+	do_setup = 1
+on drive.mediatype == "none" // && drive.tray != "open"
+	on setup == 0
+		on do_setup == 1
+			do_setup = 0
+			setup = 1
+		delete .group != "mute" && .group != "scr"
+		screen.back = def_screen_back
+
+////////////////////////////////////////////////////////////
+// volume and display adjustments, messages and balloons:	
+
+include "adjust.mmsl"
+
+
+///
+include "flash.mmsl"
+
+//////////////////////////////////////////////////////
+
+on drive.mediatype == "iso" || drive.mediatype == "audio" || drive.mediatype == "mixed"
+	dvd = 0
+	cancel_setup = 1
+	iso = 1
+
+on redraw_iso == 1
+	iso = 1
+
+on iso == 1
+	kernel.print = "Media: " + drive.mediatype
+	include "iso.mmsl"
+
+// clean-up if media changed - delete all objects
+on drive.mediatype == "iso" || drive.mediatype == "audio" || drive.mediatype == "mixed" || redraw_iso == 1
+	on iso == 0
+		player.command = "stop"
+		playing = 0
+		del_info = 1
+		pad.clear = "all"
+		redraw_iso = 0
+		cancel_search = 1
+		cancel_osd = 1
+		cancel_popup = 1
+		adjustment = 0
+		do_play_audio = 0
+		do_play_video = 0
+		do_show_photo = 0
+		delete .group != "mute" && .group != "scr"
+		screen.preload = ""		// clear picture cache (memory saving)
+		screensaver = 0
+		sleep_timer = 0
+		screen.update = 1
+
+//////////////////////////////////////////////////////
+// some DVD-related controls
+on drive.mediatype == "dvd"
+	iso = 0
+	cancel_setup = 1
+	dvd = 1
+
+	on dvd == 0
+		// always stop playing if media changed
+		player.command = "stop"
+		cancel_search = 1
+		cancel_osd = 1
+		cancel_popup = 1
+		cancel_zoom = 1
+		adjustment = 0
+		delete .group != "mute" && .group != "scr"
+		screen.back = def_screen_back
+		screen.preload = ""		// clear picture cache (memory saving)
+		allow_zoom = 0
+		allow_osd = 0
+		screen.update = 1
+
+		on pad.key == "play"
+			dvd = 1
+
+		on setup == 0
+			on pad.key == "enter"
+				cleanup_all = 1
+				drive.mediatype = "iso"
+
+			on do_setup == 1
+				do_setup = 0
+				setup = 1
+
+on dvd == 1
+	kernel.print = "Media: DVD"
+	show_timer_balloon = "dvd"
+	include "dvd.mmsl"
+
+on setup == 1
+	on do_setup == 1
+		do_setup = 0
+		cancel_setup = 1
+		drive.mediatype = ""
+	include "setup.mmsl"
+
+////////////////////////////////////////////////////////////
+// include search dialog, common for DVD and file player:	
+
+include "search.mmsl"
+
+////////////////////////////////////////////////////////////
+// include OSD info support, common for DVD and file player:	
+
+include "osd.mmsl"
+
+////////////////////////////////////////////////////////////
+// include zoom/scroll support, common for DVD and file player:	
+
+include "zoom.mmsl"
+
+////////////////////////////////////////////////////////////
+// include Text popup support:	
+
+include "popup.mmsl"
+

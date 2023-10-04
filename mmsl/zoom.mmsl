@@ -1,0 +1,73 @@
+////////////////////////////
+// display zoom/scroll:
+
+zoom_mode = 0
+
+on do_cancel_zoom == 1
+	screen.update = 0
+	screen.hzoom = 100
+	screen.vzoom = 100
+	screen.hscroll = 0
+	screen.hscroll = 0
+	screen.update = 1
+
+on cancel_zoom == 1
+	do_cancel_zoom = 1
+	zoom_mode = 0
+
+on allow_zoom == 1
+	on pad.key == "zoom"
+		do_zoom = 1
+
+	on do_zoom == 1
+		do_cancel_zoom = 1
+
+	on zoom_mode == 0
+		on do_zoom == 1
+			do_zoom = 0
+			zoom_mode = 1
+			show_fast_balloon = "zoomon"
+	on zoom_mode != 0
+		on pad.key == "enter"
+			do_scroll = 1
+
+		on do_zoom == 1
+			do_zoom = 0
+			zoom_mode = 0
+			show_fast_balloon = "zoomoff"
+
+	on zoom_mode == 1
+		on do_scroll == 1
+			do_scroll = 0
+			zoom_mode = 2
+			show_fast_balloon = "scrollon"
+	on zoom_mode == 2
+		on do_scroll == 1
+			do_scroll = 0
+			zoom_mode = 1
+			show_fast_balloon = "zoomon"
+
+	on zoom_mode == 2
+		on pad.key == "left"
+			screen.hscroll = screen.hscroll - 30
+		on pad.key == "right"
+			screen.hscroll = screen.hscroll + 30
+		on pad.key == "up"
+			screen.vscroll = screen.vscroll - 30
+		on pad.key == "down"
+			screen.vscroll = screen.vscroll + 30
+	on zoom_mode == 1
+		on pad.key == "left"
+			screen.update = 0
+			screen.hzoom = "in"
+			screen.vzoom = "in"
+			screen.update = 1
+		on pad.key == "right"
+			screen.update = 0
+			screen.hzoom = "out"
+			screen.vzoom = "out"
+			screen.update = 1
+		on pad.key == "up"
+			screen.vzoom = "in"
+		on pad.key == "down"
+			screen.vzoom = "out"

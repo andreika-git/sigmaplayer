@@ -1,0 +1,437 @@
+
+//////////////////////////////////
+// header pic:
+
+add image header
+	header.x = screen.left
+	header.y = 20
+	header.src = "img/mediatop.gif"
+
+//////////////////////////////////
+// upper text:
+upper_x = 150+30
+upper_y = 100
+
+add text folder
+	folder.x = upper_x
+	folder.y = upper_y
+	folder.value = explorer.folder
+
+	on explorer.folder != ""
+		folder.value = explorer.folder
+
+//////////////////////////////////
+// list:
+
+list_x = 148
+list_y = 260
+list_count = 7
+list_item_height = 0
+
+add rect play_rect
+	play_rect.group = "cursor_rect"
+	play_rect.round = 8
+	play_rect.color = -1
+	play_rect.color = colors.white
+	play_rect.backcolor = colors.grey
+	play_rect.visible = 0
+
+add rect cursor_rect
+	cursor_rect.group = "cursor_rect"
+	cursor_rect.round=8
+	cursor_rect.color = -1
+	cursor_rect.backcolor = colors.yellowback
+	cursor_rect.visible = 0
+
+add rect scroll_back
+	scroll_back.width = 10
+	scroll_back.x = screen.right - 15
+	scroll_back.y = list_y
+	scroll_back.height = screen.bottom - list_y - 10
+	scroll_back.color = -1
+	scroll_back.backcolor = colors.grey
+
+add image scroll_up
+	scroll_up.x = screen.right - 15
+	scroll_up.y = list_y - 10
+	scroll_up.src = "img/scroll.gif"
+add image scroll_down
+	scroll_down.x = screen.right - 15
+	scroll_down.y = screen.bottom - 10
+	scroll_down.src = "img/scroll.gif"
+	scroll_down.vflip = 1
+
+add rect scroll
+	scroll.width = scroll_back.width
+	scroll.height = scroll.width
+	scroll.x = screen.right - 15
+	scroll.color = -1
+	scroll.backcolor = colors.white
+	scroll.round = 5
+	scroll.visible = 0
+
+list_init = 1
+on iso_init == 1
+	on list_init == 1
+		list_init = 0
+		iso_init = 0
+		in_menu = explorer.count == 0
+		menu_pos = 0
+		explorer.position = list_offset
+
+folder_changed = 1
+
+//////////////////////////
+// start folder browsing:
+
+on folder_changed == 1
+	list_offset = 0
+
+	on explorer.position - list_offset >= list_count
+		list_offset = explorer.position - list_count + 1
+
+	folder_changed = 0
+	update_list = 1
+
+////////////////////////////////////////
+// if user pressed 'ENTER':
+on pad.key == "enter"
+	do_enter = 1
+
+////////////////////////// 
+// update/draw list:
+
+on update_list == 1
+	update_list_loop = 0
+	delete .group == "items"
+	del_info = 1
+	osd = 0
+
+on explorer.count > 0
+	on update_list == 1
+		list_iy = list_y
+		list_pos = list_offset
+		saved_pos = explorer.position
+		explorer.position = list_offset
+		screen.update = 0
+
+		scroll_back.visible = 1
+		scroll_up.visible = 1
+		scroll_down.visible = 1
+
+		update_list_loop = 1
+
+on explorer.count == 0
+	on update_list == 1
+
+		scroll_back.visible = 0
+		scroll_up.visible = 0
+		scroll_down.visible = 0
+		scroll.visible = 0
+		cursor_rect.visible = 0
+		show_balloon = ""
+
+		screen.update = 1
+		add text item
+			item.group = "items"
+			item.backcolor = -1
+			item.x = list_x + 40; item.y = list_y; 
+			item.value = "** No items **"
+
+
+//////////////////////////
+// draw 1 list item:
+
+on explorer.count > 0
+	on update_list_loop == 1
+	
+		// draw item icon:
+		icon_type = explorer.type
+
+		on icon_type == "folder"
+			draw_icon = "foldericon"
+		on icon_type == "up"
+			draw_icon = "upfoldericon"
+		on explorer.maskindex == 1	// movie
+			on icon_type == "file"
+				draw_icon = "movieicon"
+		on explorer.maskindex == 2	// music
+			on icon_type == "file"
+				draw_icon = "musicicon"
+		on explorer.maskindex == 3	// pics
+			on icon_type == "file"
+				draw_icon = "picsicon"
+		on explorer.maskindex == 4 	// subtitles
+			on icon_type == "file"
+				draw_icon = "subticon"
+		on explorer.maskindex == 5 	// firmware
+			on icon_type == "file"
+				draw_icon = "fwicon"
+		on icon_type == "track"
+				draw_icon = "musicicon"
+		on icon_type == "dvd"
+				draw_icon = "dvdicon"
+
+		on explorer.copied == 1
+			on draw_icon != ""
+				draw_icon_src = "sel"+draw_icon
+		on explorer.copied == 0
+			on draw_icon != ""
+				draw_icon_src = draw_icon
+		on draw_icon_src != ""
+			add image itemimg
+				itemimg.group = "items"
+				itemimg.x = list_x; itemimg.y = list_iy;
+				itemimg.src = "img/"+draw_icon_src+".gif"
+
+		// print item text
+		add text item
+			item.group = "items"
+			item.backcolor = -1
+			item.x = list_x + 40; item.y = list_iy; 
+			set_item_type = explorer.type
+			on set_item_type == "up"
+				item.value = "[Up Folder]"
+			on set_item_type == "folder"
+				item.value = "[" + explorer.filename+explorer.extension + "]"
+			on set_item_type == "file"
+				item.value = explorer.filename+explorer.extension
+			on set_item_type == "track"
+				item.value = "Track " + explorer.filename
+			on set_item_type == "dvd"
+				item.value = "DVD Movie"
+	
+		list_item_height = item.height
+		list_iy = list_iy + list_item_height + 2
+		explorer.command = "next"
+		list_pos = list_pos+1
+
+		on (list_pos < explorer.count && list_pos < list_offset + list_count)
+			update_list_loop = 1
+
+		on (list_pos >= explorer.count || list_pos >= list_offset + list_count)
+			explorer.position = saved_pos
+			update_list_loop = 2
+			screen.update = 1
+	
+	// the end of update
+	on update_list_loop == 2
+		clear_balloon = 1
+		on show_balloon != "player/stop"
+			on clear_balloon == 1
+				show_balloon = ""
+
+		cancel_popup = 1
+		check_popups = 1
+		on show_badvideo_popup == 1
+			on check_popups == 1
+				popup_timer = 4500
+				auto_close_popup = 1
+				show_popup_text = "Video codec not supported"
+				show_badvideo_popup = 0
+
+		on show_qpel_gmc_popup == 1
+			on check_popups == 1
+				popup_timer = 4500
+				auto_close_popup = 1
+				show_popup_text = "MPEG-4 Video with " + qpel_gmc + " not supported"
+				show_qpel_gmc_popup = 0
+
+		on show_badphoto_popup == 1
+			on check_popups == 1
+				popup_timer = 4500
+				auto_close_popup = 1
+				show_popup_text = "Cannot show JPEG file\n(too large or not enough memory)"
+				show_badphoto_popup = 0
+		
+		update_list_loop = 0
+		cur_pos = explorer.position
+		play_cur_pos = play_cur_pos
+
+///// move cursor
+	on cur_pos != -1
+		cursor_rect.visible = 1
+		cursor_rect.backcolor = colors.yellowback
+		cursor_rect.x = list_x + 33
+		cursor_rect.y = list_y+(cur_pos-list_offset)*(list_item_height+2)
+		cursor_rect.width = screen.right-list_x - 40
+		cursor_rect.height = list_item_height
+		// move scroller:
+		scroll.y = list_y + (cur_pos * scroll_back.height) / explorer.count
+		scroll_height = scroll_back.height / explorer.count
+		on scroll_height > 5
+			scroll.height = scroll_height
+		on scroll_height <= 5
+			scroll.height = 5
+		scroll.visible = explorer.count > 1
+
+////// move play cursor
+	on play_cur_pos > -2
+		play_rect.visible = 0
+	on in_menu != 2 && play_cur_pos >= list_offset && play_cur_pos < list_offset+list_count
+		on play_cur_pos != -1
+			play_rect.visible = 1
+			play_rect.x = list_x + 32
+			play_rect.y = list_y+(play_cur_pos-list_offset)*(list_item_height+2)-1
+			play_rect.width = screen.right - list_x - 40
+			play_rect.height = list_item_height+2
+	
+///////////////////////////////////////////
+// cursor on the list:
+on update_list_loop == 0
+	on in_menu == 0
+    	on cur_pos < explorer.count - 1
+    		// cursor is at the bottom - scroll to the next page
+    		on cur_pos == list_offset + list_count - 1
+    			on pad.key == "down"
+    				explorer.command="next"
+    				list_offset = explorer.position - list_count + 1
+    				cur_pos = explorer.position
+    				update_list = 1
+    	
+    		on (cur_pos - list_offset < list_offset + list_count - 1)
+    			on pad.key == "down"
+    				explorer.command = "next"
+    				cur_pos = explorer.position
+
+    	// cursor is at the top - scroll to the prev. page
+    	on cur_pos > 0 && cur_pos == list_offset
+    		on pad.key == "up"
+    			explorer.command = "prev"
+    			list_offset = explorer.position
+    			cur_pos = explorer.position
+    			update_list = 1
+
+    	on cur_pos > 0
+    		on pad.key == "up"
+    			explorer.command = "prev"
+    			cur_pos = explorer.position
+
+    	on pad.key == "next"
+    		scroll_next = 1
+    	on pad.key == "prev"
+    		scroll_prev = 1
+
+    	on explorer.type == "folder"
+    		on do_enter == 1
+    			do_enter = 0
+    			// we cannot continue playing if folder is changed
+				do_play_all = 0
+
+    			explorer.folder = explorer.path
+    			show_timer_balloon = "wait"
+    			screen.update = "now"
+    			explorer.command = "update"
+    			display_pad = 1
+    			folder_changed = 1
+
+    	on explorer.type == "up"
+    		on do_enter == 1
+    			// we cannot continue playing if folder is changed
+				do_play_all = 0
+
+    			do_enter = 0
+    			explorer.folder = ".."
+    			show_timer_balloon = "wait"
+    			screen.update = "now"
+    			explorer.command = "update"
+    			display_pad = 1
+    			folder_changed = 1
+
+		// play current file
+		on (explorer.type == "file" || explorer.type == "track" || explorer.type == "dvd") && playlist_edit == 0
+    		on do_enter == 1
+    			do_play_all = 0
+				do_continue_play = 0
+				stop_before_play = 0
+				player.command = "stop"
+    			play_pos = explorer.position
+    			cur_play_pos = play_pos
+    			play_next_cmd = "next"
+    			play_prev_cmd = "prev"
+    			play_path = explorer.path
+    			play_mediatype = explorer.maskindex
+    			play_type = explorer.type
+    			do_enter = 0
+    			do_play_audio = 0
+    			do_play_video = 0
+    			do_show_photo = 0
+    			was_continue_play = 0
+    			do_play = 1
+
+		// copy to playlist
+		on (explorer.type == "file" || explorer.type == "track") && playlist_edit == 1 && explorer.copied == 0
+			on do_enter == 1
+				do_enter = 0
+				explorer.command = "copy"
+				update_list = 1
+		on (explorer.type == "file" || explorer.type == "track") && playlist_edit == 1 && explorer.copied == 1
+			on do_enter == 1
+				do_enter = 0
+				explorer.command = "targetremove"
+				update_list = 1
+
+		///////////////////////////////////
+		// jump to the first:
+		on cur_pos > 0
+			on pad.key == "return"
+				explorer.position = 0
+				list_offset = 0
+				cur_pos = explorer.position
+				update_list = 1
+		on pad.key == "title"
+			explorer.folder = "/"
+			explorer.command = "update"
+			display_pad = 1
+			list_offset = 0
+			cur_pos = explorer.position
+			update_list = 1
+
+	/////////////////////////////////////
+	// page down:
+	on cur_pos <= explorer.count - list_count*2
+		on scroll_next == 1
+			explorer.position = explorer.position + list_count
+			list_offset = list_offset + list_count
+			cur_pos = explorer.position
+			update_list = 1
+
+	on cur_pos > explorer.count - list_count*2 && cur_pos < explorer.count - list_count
+		on scroll_next == 1
+			explorer.position = explorer.position + list_count
+			list_offset = explorer.count - list_count
+			cur_pos = explorer.position
+			update_list = 1
+
+	on cur_pos >= explorer.count - list_count && cur_pos < explorer.count - 1
+		on scroll_next == 1
+			explorer.position = explorer.count - 1
+			list_offset = explorer.count - list_count
+			on list_offset < 0
+				list_offset = 0
+			cur_pos = explorer.position
+			update_list = 1
+
+	/////////////////////////////////////
+	// page up:
+	on cur_pos >= list_count*2
+		on scroll_prev == 1
+			explorer.position = explorer.position - list_count
+			list_offset = list_offset - list_count
+			cur_pos = explorer.position
+			update_list = 1
+
+	on cur_pos < list_count*2 && cur_pos >= list_count
+		on scroll_prev == 1
+			explorer.position = explorer.position - list_count
+			list_offset = 0
+			cur_pos = explorer.position
+			update_list = 1
+
+	on cur_pos < list_count && cur_pos > 0
+		on scroll_prev == 1
+			explorer.position = 0
+			list_offset = 0
+			cur_pos = explorer.position
+			update_list = 1
+

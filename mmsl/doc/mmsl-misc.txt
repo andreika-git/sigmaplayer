@@ -1,0 +1,51 @@
+===================================================================
+
+- object
+  * Special built-in object - always equal to last created/accessed/modified object.
+  * Cannot be used in 'on' condition
+  - created
+      All objects have this member variable.
+  	  Set once - after the object's creation
+  - modified
+      All objects have this member variable.
+      Set to modified variable's name
+  - accessed
+      All objects have this member variable.
+      Set to accessed variable's name; Accessing means reading or modification
+
+- array
+  - count
+  - sort="normal", "inverse", "random"
+  - slice
+  - insert
+  - pos
+    ALIAS: position
+    * zero-based
+  - value
+    * contains a single array element, choosen by pos or jump
+  - jump
+    = "first"
+    = "last"
+    = "next"
+    = "prev"
+
+- string
+  * Can be used for text strings manipulation.
+  - value [r/w]
+    * string value - contains the string itself
+  - length [r/w]
+    * Read it to get string length.
+    * Set it to trim the string.
+  - from
+    * Set substring of current string starting from given character position.
+    * Can be used for character access too.
+  - find
+    * Cuts string to found substring
+
+- timer
+  - delta
+    * Time in milliseconds left before triggering timer (updating object)
+    * Will be set to zero when time elapses
+
+
+===================================================================

@@ -1,0 +1,183 @@
+АЛГОРИТМ:
+- читаем весь файл в память
+- детектим тим пубтитров по первым 512 байтам. Пробегаем побайтово по данным, для каждого из форматов субтитра.
+- тот формат, который оказался _первым_ и есть искомый формат.
+- если НЕПУСТЫЕ субтитры пересекаются, надо склеивать их (проверять в отдельном проходе).
+- если 2 субтитра идут в одно и то же время, то надо показывать их по очереди кадр за кадром (а не все сразу)
+  (некоторые субтитры в файлах - с точностью до секунды, и происходят накладки)
+- работаем примерно так:
+  1) задаём фильтр для поиска записи в виде набора лексем (массив).
+    - лексема = набор спец.символов маски:
+       0 = число
+       1 = 1 цифра
+       2 = 2 цифры
+       ...
+       " " = пробел
+       \n = \n
+       - строка?
+    - для каждой лексемы задаём: 
+     - как трактовать значение
+       - никак
+       - секунда начала
+       - минисекунда конца
+       - дельта времени начала
+       ...
+     - флаги
+       - обязательно ли должна присутствовать
+       - 
+
+===========================================================
+Разделители строк:
+"\n", "|", "[br]", "\\N"
+
+===========================
+
+ВИДЫ СУБТИТРОВ:
+
+1) SubRip (.srt)
+------------------------------------
+408
+00:57:23,678 --> 00:57:29,845
+I've been looking for you for two days. There are five 
+wraiths behind you. Where the other four are I do not know.
+
+------------------------------------
+SUB_SECTION_START:
+{ 	SUB_TOKEN_HOUR1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, SUB_TOKEN_OPTIONAL_NEXT, ",", SUB_TOKEN_OPTIONAL_NEXT, SUB_TOKEN_MSEC1," --> ",
+	SUB_TOKEN_HOUR2, ":", SUB_TOKEN_MIN2, ":", SUB_TOKEN_SEC2, SUB_TOKEN_OPTIONAL_NEXT, ",", SUB_TOKEN_OPTIONAL_NEXT, SUB_TOKEN_MSEC2, "\n",
+	NULL
+}
+
+SUB_SECTION_END:
+"\n\n"
+
+2) SubViewer 1.0 (.sub)
+------------------------------------
+[00:57:23]
+I've been looking for you for two days. There are five |wraiths behind you. Where the other four are I do not know.
+------------------------------------
+SUB_SECTION_START:
+{ 	"[", SUB_TOKEN_HOUR1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, "]\n", 
+	NULL
+}
+
+SUB_SECTION_END:
+"\n["
+
+3) SubViewer 2.0 (.sub)
+------------------------------------
+00:57:23.67,00:57:29.84
+I've been looking for you for two days. There are five [br]wraiths behind you. Where the other four are I do not know.
+
+------------------------------------
+SUB_SECTION_START:
+{	SUB_TOKEN_HOUR1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, ".", SUB_TOKEN_DSEC1, ",",
+	SUB_TOKEN_HOUR2, ":", SUB_TOKEN_MIN2, ":", SUB_TOKEN_SEC2, ".", SUB_TOKEN_DSEC2, "\n",
+	NULL
+}
+
+SUB_SECTION_END:
+"\n\n"
+
+4) DVDSubtitle (.sub)
+------------------------------------
+{T 00:00:21:51
+this is a test!
+}
+------------------------------------
+SUB_SECTION_START:
+{	"{T ", SUB_TOKEN_HOUR1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, ":", SUB_TOKEN_DSEC1, "\n",
+	NULL
+}
+SUB_SECTION_END:
+"}"
+
+5) DVD Architect (.sub)
+------------------------------------
+0407	00:57:23:67	00:57:29:84	I've been looking for you for two days. There are five 
+wraiths behind you. Where the other four are I do not know.
+------------------------------------
+SUB_SECTION_START:
+{	SUB_TOKEN_SKIP_DIGITS_4, "\t", 	SUB_TOKEN_HOUR1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, ":", SUB_TOKEN_DSEC1, "\t",
+							SUB_TOKEN_HOUR2, ":", SUB_TOKEN_MIN2, ":", SUB_TOKEN_SEC2, ":", SUB_TOKEN_DSEC2, "\t",
+	NULL
+}
+
+SUB_SECTION_END:
+"\n\n"
+
+6) MicroDVD (.sub)
+------------------------------------
+{1}{1}29.997
+{103300}{103485}I've been looking for you for two days. There are five |wraiths behind you. Where the other four are I do not know.
+------------------------------------
+	* N = secs*25.000+msecs*25.000/1000
+SUB_SECTION_START:
+{	"{", SUB_TOKEN_FRAMES1, "}{", SUB_TOKEN_FRAMES2, "}",
+	NULL
+}
+SUB_SECTION_END:
+"\n"
+
+7) MPSub (.sub)
+------------------------------------
+1.67 6.17
+I've been looking for you for two days. There are five 
+wraiths behind you. Where the other four are I do not know.
+
+------------------------------------
+	* 1st - delta_T (in secs) to wait
+	* 2nd - delta_T (in secs) to display
+SUB_SECTION_START: 
+{	SUB_TOKEN_DELTA_SECS1, " ", SUB_TOKEN_DELTA_SECS2, "\n",
+	NULL 
+}
+SUB_SECTION_END:
+"\n\n"
+
+=================================================
+
+8) TMPlayer (.sub)
+------------------------------------
+00:57:23,1=I've been looking for you for two days. There are five 
+00:57:23,2=wraiths behind you. Where the other four are I do not know.
+00:57:29,1=
+00:57:29,2=
+------------------------------------
+SUB_SECTION_START: 
+{
+	SUB_TOKEN_HOUR1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, ",", SUB_TOKEN_LINE_NUMBER, "=",
+	NULL
+}
+SUB_SECTION_END:
+"\n"
+
+9) SubSonic (.sub)
+------------------------------------
+1 115.68 \ ~:\I've been looking for you for two days. There are five  wraiths behind you. Where the other four are I do not know.
+1 121.84
+------------------------------------
+	***** период в 256 секунд?
+SUB_SECTION_START:
+{
+	"1 ", SUB_TOKEN_SEC1_256, ".", SUB_TOKEN_DSEC1_256, SUB_TOKEN_SKIP_NEXT_FOR_2, " \ ~:\",
+	NULL
+}
+SUB_SECTION_END:
+"\n"
+
+10) SubStation Alpha (.ssa)
+------------------------------------
+Dialogue: Marked=0,0:57:23.67,0:57:29.84,Default,NTP,0000,0000,0000,!Effect,I've been looking for you for two days. There are five \Nwraiths behind you. Where the other four are I do not know.
+------------------------------------
+SUB_SECTION_START:
+{
+	SUB_TOKEN_SKIP_TO_NEXT, ",", SUB_TOKEN_HOUR1_1, ":", SUB_TOKEN_MIN1, ":", SUB_TOKEN_SEC1, ".", SUB_TOKEN_DSEC1, ",",
+	SUB_TOKEN_HOUR2_1, ":", SUB_TOKEN_MIN2, ":", SUB_TOKEN_SEC2, ".", SUB_TOKEN_DSEC2, ",",
+	SUB_TOKEN_SKIP_TO_NEXT, ",", SUB_TOKEN_SKIP_TO_NEXT, ",", SUB_TOKEN_SKIP_TO_NEXT, ",", 
+	SUB_TOKEN_SKIP_TO_NEXT, ",", SUB_TOKEN_SKIP_TO_NEXT, ",", SUB_TOKEN_SKIP_TO_NEXT, ",",
+	NULL
+}
+SUB_SECTION_END:
+"\n"
+

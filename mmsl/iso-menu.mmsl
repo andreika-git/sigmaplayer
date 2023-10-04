@@ -1,0 +1,383 @@
+//////////////////////////////////
+// left menu:
+
+menu_x = screen.left
+menu_y = 100
+menu_item_height = 40
+
+add image mplay
+	mplay.x = menu_x; 
+	mplay.y = menu_y + menu_item_height * 0;
+	mplay.src = "img/playoff.gif"
+add image mplaymode
+	mplaymode.x = menu_x + 5; 
+	mplaymode.y = menu_y + mplay.height + 5;
+	set_playmode = 1
+
+add image mplaylist
+	mplaylist.x = menu_x - 5 
+	mplaylist.y = menu_y + menu_item_height * 2;
+	mplaylist.src = "img/playlistoff.gif"
+add image mplaylistedit
+	mplaylistedit.x = menu_x - 5 
+	mplaylistedit.y = mplaylist.y + mplaylist.height;
+	set_playlistmode = 1
+	
+add image mplaylistmodes
+	mplaylistmodes.x = mplaylistedit.x + mplaylistedit.width 
+	mplaylistmodes.y = mplaylist.y + mplaylist.height;
+	mplaylistmodes.src = "img/playlist-modes.gif"
+
+mrect_x = screen.left - 5
+mrect_y = menu_y + menu_item_height * 3
+
+add image maudio
+	maudio.x = mrect_x; 
+	maudio.y = mrect_y + menu_item_height * 1;
+add image mvideo
+	mvideo.x = mrect_x; 
+	mvideo.y = mrect_y + menu_item_height * 2;
+add image mphoto
+	mphoto.x = mrect_x; 
+	mphoto.y = mrect_y + menu_item_height * 3;
+add image msubt
+	msubt.x = mrect_x; 
+	msubt.y = mrect_y + menu_item_height * 4;
+
+
+add rect mrect
+	mrect.x = menu_x - 1
+	mrect.y = mrect_y - 2
+	mrect.width = 105
+	mrect.height = menu_item_height - 2
+	mrect.backcolor = -1
+	mrect.color = colors.yellow
+	mrect.round = 5
+	mrect.linewidth = 2
+	mrect.visible = 0
+
+set_mflags = 1
+
+on flag_music == 0
+	on set_mflags == 1
+		maudio.src = "img/audoff.gif"
+on flag_music == 1
+	on set_mflags == 1
+		maudio.src = "img/audon.gif"
+on flag_movie == 0
+	on set_mflags == 1
+		mvideo.src = "img/vidoff.gif"
+on flag_movie == 1
+	on set_mflags == 1
+		mvideo.src = "img/vidon.gif"
+on flag_pics == 0
+	on set_mflags == 1
+		mphoto.src = "img/photoff.gif"
+on flag_pics == 1
+	on set_mflags == 1
+		mphoto.src = "img/photon.gif"
+on flag_subt == 0
+	on set_mflags == 1
+		msubt.src = "img/subtoff.gif"
+on flag_subt == 1
+	on set_mflags == 1
+		msubt.src = "img/subton.gif"
+on flag_playlist == 0
+	on set_mflags == 1
+		mplaylist.src = "img/playlistoff.gif"
+on flag_playlist == 1
+	on set_mflags == 1
+		mplaylist.src = "img/playliston.gif"
+
+// set "playlist edit" mode - not in playlist!
+on playlist_edit == 1 && flag_playlist == 1
+	on set_playlistmode == 1
+		flag_playlist = 0
+		set_mflags = 1
+		do_playlist = 1
+		do_playlist = 2
+on playlist_edit == 0
+	on set_playlistmode == 1
+		mplaylistedit.src = "img/playlist-edit-off.gif"
+		set_playlistmode = 0
+on playlist_edit == 1
+	on set_playlistmode == 1
+		mplaylistedit.src = "img/playlist-edit-on.gif"
+		set_playlistmode = 0
+
+on play_mode == "all"
+	on set_playmode == 1
+		set_playmode = 0
+		mplaymode.src = "img/play-all.gif"
+on play_mode == "random"
+	on set_playmode == 1
+		set_playmode = 0
+		mplaymode.src = "img/play-random.gif"
+
+old_menu_pos = -1
+
+
+///////////////////////////////////////////
+// menu cursor:
+
+on pad.key == "right"
+	do_right = 1
+
+on in_menu = 1
+	on explorer.count > 0
+		on menu_cursor_hide == 1
+			mrect.visible = 0
+	on menu_pos == 0
+		mrect.x = mplay.x - 2
+		mrect.y = mplay.y - 2
+		mrect.width = 105
+		mrect.height = 26
+		mrect.visible = 1
+	on menu_pos == 1 && menu_posx == 0
+		mrect.y = mplaymode.y
+		mrect.x = mplaymode.x - 2
+		mrect.width = 28
+		mrect.height = 17
+		mrect.visible = 1
+	on menu_pos == 1 && menu_posx == 1
+		mrect.y = mplaymode.y
+		mrect.x = mplaymode.x + 38
+		mrect.width = 57
+		mrect.height = 17
+		mrect.visible = 1
+	on menu_pos == 2
+		mrect.y = mplaylist.y
+		mrect.x = mplaylist.x - 2
+		mrect.width = 110
+		mrect.height = menu_item_height - 10
+		mrect.visible = 1
+	on menu_pos == 3 && menu_posx == 0
+		mrect.y = mplaylistedit.y
+		mrect.x = mplaylistedit.x - 2
+		mrect.width = mplaylistedit.width + 4
+		mrect.height = 20
+		mrect.visible = 1
+	on menu_pos == 3 && menu_posx == 1
+		mrect.y = mplaylistmodes.y
+		mrect.x = mplaylistmodes.x + 4
+		mrect.width = 23
+		mrect.height = 20
+		mrect.visible = 1
+	on menu_pos == 3 && menu_posx == 2
+		mrect.y = mplaylistmodes.y
+		mrect.x = mplaylistmodes.x + 30
+		mrect.width = 43
+		mrect.height = 20
+		mrect.visible = 1
+	on menu_pos >= 4
+		mrect.y = mrect_y + (menu_pos - 3) * menu_item_height - 2
+		mrect.x = menu_x - 1
+		mrect.width = 105
+		mrect.height = menu_item_height - 2
+		mrect.visible = 1
+
+/////////////////////
+// menu cursor control:
+on in_menu = 1
+	on menu_pos > 0
+		on pad.key == "up"
+			menu_pos = menu_pos - 1
+			menu_posx = 0
+
+	on (menu_pos == 1 && menu_posx == 0) || (menu_pos == 3 && menu_posx < 2)
+		on do_right == 1
+			do_right = 0
+			menu_posx = menu_posx + 1
+	
+	on (menu_pos == 1 && menu_posx == 1) || (menu_pos == 3 && menu_posx > 0)
+		on pad.key == "left"
+			menu_posx = menu_posx - 1
+
+	on menu_pos < 7
+		on pad.key == "down"
+			menu_pos = menu_pos + 1
+			menu_posx = 0
+
+	// pageup/pagedown
+	on pad.key == "next"
+		do_next = 1
+	on pad.key == "prev"
+		do_prev = 1
+	on menu_pos == 0 || menu_pos == 1
+		on do_next == 1
+			do_next = 0
+			menu_pos = 2
+			menu_posx = 0
+	on menu_pos == 2 || menu_pos == 3
+		on do_next == 1
+			do_next = 0
+			menu_pos = 4
+			menu_posx = 0
+	on menu_pos <= 3
+		on do_prev == 1
+			do_prev = 0
+			menu_pos = 0
+			menu_posx = 0
+	on menu_pos == 4
+		on do_prev == 1
+			do_prev = 0
+			menu_pos = 2
+			menu_posx = 0
+	on menu_pos >= 4 && menu_pos < 7
+		on do_next == 1
+			do_next = 0
+			menu_pos = menu_pos + 1
+			menu_posx = 0
+	on menu_pos > 4 && menu_pos <= 6
+		on do_prev == 1
+			do_prev = 0
+			menu_pos = menu_pos - 1
+			menu_posx = 0
+
+///////////////////////////////////////////
+// menu/list switch:
+on in_menu == 0
+	on pad.key == "left"
+		in_menu = 1
+		menu_pos = menu_pos
+		cursor_rect.backcolor = colors.grey
+
+on in_menu == 1 && explorer.count > 0 && (menu_pos == 0 || menu_pos == 2 || menu_pos >=4 || (menu_pos == 1 && menu_posx == 1) || (menu_pos == 3 && menu_posx == 2))
+	on do_right == 1
+		do_rignt = 0
+		menu_cursor_hide = 1
+		in_menu = 0
+		cursor_rect.backcolor = colors.yellowback
+
+///////////////////////////
+// menu actions:
+on in_menu == 1
+	on pad.key == "enter"
+		do_enter = 1
+	// play all/random (see iso-play.mmsl)
+	on explorer.count > 0
+		on menu_pos == 0
+			on do_enter == 1
+				menu_cursor_hide = 1
+				in_menu = 0
+				cursor_rect.backcolor = colors.yellowback
+				do_start_play_all = 1
+
+	// playmode all
+	on menu_pos == 1 && menu_posx == 0
+		on do_enter == 1
+			do_enter = 0
+			play_mode = "all"
+			set_playmode = 1
+	// playmode random
+	on menu_pos == 1 && menu_posx == 1
+		on do_enter == 1
+			do_enter = 0
+			play_mode = "random"
+			set_playmode = 1
+	// playlist edit
+	on menu_pos == 3 && menu_posx == 0
+		on do_enter == 1
+			do_enter = 0
+			playlist_edit = 1 - playlist_edit
+			set_playlistmode = 1
+			menu_cursor_hide = 1
+			in_menu = 0
+			cursor_rect.backcolor = colors.yellowback
+	// playlist add all
+	on menu_pos == 3 && menu_posx == 1
+		on do_enter == 1
+			do_enter = 0
+			explorer.command = "copyall"
+			menu_cursor_hide = 1
+			in_menu = 0
+			update_list = 1
+	// playlist clear
+	on menu_pos == 3 && menu_posx == 2
+		on do_enter == 1
+			do_enter = 0
+			explorer.command = "targetremoveall"
+			jump_to_list = 1
+			update_list = 1
+		on explorer.count > 0
+			on jump_to_list == 1
+				menu_cursor_hide = 1
+				in_menu = 0
+
+///////////////////////////////////
+// bottom left menu actions:
+on in_menu == 1
+	// playlist
+	on menu_pos == 2
+		on pad.key == "enter"
+			flag_playlist = 1 - flag_playlist
+			set_mflags = 1
+			do_playlist = 1
+			do_playlist = 2
+	on flag_playlist == 1
+		on do_playlist == 1
+			do_playlist = 0
+			saved_folder = explorer.folder
+			explorer.folder = "playlist"
+			header.src = "img/playlisttop.gif"
+			playlist_edit = 0
+			set_playlistmode = 1
+	on flag_playlist == 0
+		on do_playlist == 1
+			do_playlist = 0
+			explorer.folder = saved_folder
+			header.src = "img/mediatop.gif"
+	on do_playlist == 2
+			show_timer_balloon = "wait"
+   			screen.update = "now"
+			
+			// we cannot continue playing if folder is changed
+			do_play_all = 0
+   			
+   			explorer.command = "update"
+   			need_menu_cursor_hide = 1
+   			folder_changed = 1
+	on explorer.count > 0
+		need_menu_cursor_hide = 1
+			menu_cursor_hide = 1
+			in_menu = 0
+
+	// music flag
+	on menu_pos == 4
+		on pad.key == "enter"
+			flag_music = 1 - flag_music
+			set_mflags_and_update = 1
+			
+	// movie flag
+	on menu_pos == 5
+		on pad.key == "enter"
+			flag_movie = 1 - flag_movie
+			set_mflags_and_update = 1
+	// pics flag
+	on menu_pos == 6
+		on pad.key == "enter"
+			flag_pics = 1 - flag_pics
+			set_mflags_and_update = 1
+	// subt flag
+	on menu_pos == 7
+		on pad.key == "enter"
+			flag_subt = 1 - flag_subt
+			set_mflags_and_update = 1
+
+on set_mflags_and_update == 1
+	set_mflags = 1
+	show_timer_balloon = "wait"
+	screen.update = "now"
+	
+	// we cannot continue playing if folder is changed
+	do_play_all = 0
+    
+    explorer.command = "update"
+    folder_changed = 1
+    set_mflags_and_update = 2
+
+on explorer.count > 0
+	on set_mflags_and_update == 2
+		set_mflags_and_update = 0
+		menu_cursor_hide = 1
+		in_menu = 0

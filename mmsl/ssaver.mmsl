@@ -1,0 +1,145 @@
+scr_timeout = settings.user5 * 1000
+scr_timeout2 = settings.user7 * 60000
+scr_small_timeout = 300
+scr_img_timeout = 3000
+
+on settings.user5 > -1
+	scr_timeout = settings.user5 * 1000
+	scr.timer = scr_timeout
+
+on settings.user7 > -1
+	scr_timeout2 = settings.user7 * 60000
+	scr2.timer = scr_timeout2
+
+add rect scr
+	scr.group = "scr"
+	scr.visible = 0
+	scr.timer = scr_timeout
+
+add text scr2
+	scr2.group = "scr"
+	scr2.visible = 0
+	scr2.timer = scr_timeout2
+
+on sleep_timer == 1
+	on pad.key != ""
+		pad.key = ""
+		sleep_timer = 0
+
+on screensaver == 1
+	on pad.key != ""
+		pad.key = ""
+		screensaver = 0
+		scr2.timer = scr_timeout2
+
+on screensaver == 0
+	scrimg.visible = 0
+	set_def_palette = 1
+	screen.fullscreen = 0
+	scr.visible = 0
+	scr.timer = scr_timeout
+
+on sleep_timer == 0
+	scr.timer = scr_timeout
+	scr2.timer = scr_timeout2
+	cancel_popup = 1
+
+on pad.key != ""
+	scr.timer = scr_timeout
+	scr2.timer = scr_timeout2
+
+on drive.mediatype != "-"
+	scr.timer = scr_timeout
+	scr2.timer = scr_timeout2
+
+on update_list_loop == 1
+	on scr.timer == 0
+		scr.timer = scr_small_timeout
+	on scr2.timer == 0
+		scr2.timer = scr_small_timeout
+
+on (player.playing != 0 && player.speed != 0) || sleep_timer == 1
+	on scr.timer == 0
+		scr.timer = scr_timeout
+on player.playing != 0 && player.speed != 0
+	on scr2.timer == 0
+		scr2.timer = scr_timeout2
+
+on screensaver == 0 && scr_timeout > 0 && sleep_timer == 0 && flash.progress < 1 && (player.playing == 0 || player.speed == 0)
+	on scr.timer == 0
+		screensaver = 1
+on screensaver == 0 && scr_timeout > 0 && sleep_timer == 0 && flash.progress < 1 && (player.playing == 0 || player.speed == 0 || do_play_audio == 1)
+	on pad.key == "program"
+		screensaver = 1
+
+on sleep_timer == 0 && scr_timeout2 > 0 && flash.progress < 1 && (player.playing == 0 || player.speed == 0)
+	on scr2.timer == 0
+		sleep_timer = 1
+
+on screensaver == 1
+	on sleep_timer == 1
+		screensaver = 0
+
+	kernel.print = "Starting screensaver..."
+		
+	delete .group == "scr" && .type != "text"	// trick to avoid deleting of sleep-timer
+
+	add rect scr
+		scr.group = "scr"
+		scr.color = 0
+		scr.x = 0
+		scr.y = 0
+		scr.width = 640
+		scr.height = 480
+		scr.color = 0
+		scr.backcolor = 0
+		scr.visible = 1
+	screen.palette = "img/ssaver.act"
+	screen.palidx = 0
+	screen.palalpha = 255
+
+	screen.update = "now"
+	screen.fullscreen = 1
+
+	add image scrimg
+		scrimg.group = "scr"
+    	scrimg.src = "img/screensaver.gif"
+		scrimg.x = 320 - scrimg.width/2
+		scrimg.y = 240 - scrimg.height/2
+		scrimg.timer = scr_img_timeout
+		scrimg.visible = 1
+
+on sleep_timer == 1
+	kernel.print = "Sleep timer ELAPSED!"
+	continue_cnt = 6
+	continue_msg = "Player will be turned off in "
+	popup_timer = 1000
+	auto_close_popup = 0
+	show_popup_text = "" + continue_msg + continue_cnt + " seconds"
+	add image cancel
+		cancel.group = "popup"
+		cancel.halign = "center"
+		cancel.valign = "center"
+		cancel.src = "img/player/cancel.gif"
+		cancel.x = popup.x
+		cancel.y = popup.y + 55
+
+	on continue_cnt <= 1
+		on popuptext.timer == 0
+			sleep_timer = 0
+			kernel.power = 0	// TURN OFF!
+
+	on continue_cnt > 1
+		on popuptext.timer == 0
+			continue_cnt = continue_cnt - 1
+			popuptext.value = "" + continue_msg + continue_cnt + " seconds"
+			popuptext.timer = 1000
+
+	on cancel_popup == 1
+		sleep_timer = 0
+
+on screensaver == 1
+	on scrimg.timer == 0
+		scrimg.x = kernel.random % (640-scrimg.width)
+		scrimg.y = kernel.random % (480-scrimg.height)
+		scrimg.timer = scr_img_timeout

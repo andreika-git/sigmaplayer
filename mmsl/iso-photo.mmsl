@@ -1,0 +1,84 @@
+
+////////////////////////
+// photo viewer 
+
+on do_show_photo = 1
+	do_play = 0
+	del_info = 1
+	update_list_loop = 0
+	pad.display = "JPEG"
+	delete .group != "mute" && .group != "scr"
+	screen.update = "now"
+	save_menu = 1
+	in_menu = 2
+	play_cur_pos = play_pos
+	player.source = play_path	// for info only
+	playing = 1
+	we_need_info = 1
+	allow_zoom = 1
+	allow_osd = 1
+	screen.back = play_path
+	restore_osd_for_continue = 1
+	start_slideshow = 1
+
+	on settings.user6 > 0 && do_play_all == 1
+		on start_slideshow == 1
+			add rect slideshow
+			slideshow.group = "sldshow"
+			slideshow.visible = 0
+			slideshow.timer = settings.user6 * 1000
+
+	on slideshow.timer == 0
+		delete .group == "sldshow"
+		pad.key = "next"
+
+	on save_menu == 1
+		on in_menu != 2
+			old_in_menu = in_menu
+
+	on zoom_mode == 0
+		on do_enter == 1
+			stop_viewer = 1
+
+	on pad.key == "stop" || pad.key == "cancel" || pad.key == "return" || stop_viewer == 1
+		delete .group == "sldshow"
+		do_enter = 0
+		stop_viewer = 0
+		show_fast_balloon = "player/stop"
+		pad.display = "ISO"
+		kernel.print = "Restore ISO interface..."
+		do_show_photo = 0
+		cancel_osd = 1
+		cancel_zoom = 1
+		old_play_osd = osd
+		allow_zoom = 0
+		allow_osd = 0
+		do_play_all = 0
+		playing = 0
+
+		in_menu = old_in_menu
+		redraw_iso = 1
+		screen.update = "now"
+
+	// there was an error
+	on screen.back == ""
+		kernel.print = "Viewer Error!"
+		stop_viewer = 1
+		show_badphoto_popup = 1
+
+	on pad.key == "angle"
+		screen.rotate = screen.rotate+90
+		slideshow.timer = settings.user6 * 1000
+
+	on pad.key == "pbc"
+		screen.rotate = screen.rotate-90
+		slideshow.timer = settings.user6 * 1000
+
+	on pad.key == "pause"
+		slideshow.timer = -1
+		show_fast_balloon = "player/pause"
+
+	on slideshow.timer < 0
+		on pad.key == "play"
+			slideshow.timer = settings.user6 * 1000
+			show_fast_balloon = "player/play"

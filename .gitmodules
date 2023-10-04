@@ -1,0 +1,15 @@
+[submodule "src/contrib/libdvdnav"]
+	path = src/contrib/libdvdnav
+	url = https://github.com/xbmc/libdvdnav
+[submodule "src/contrib/libdvdcss"]
+	path = src/contrib/libdvdcss
+	url = https://github.com/xbmc/libdvdcss
+[submodule "src/contrib/libid3tag"]
+	path = src/contrib/libid3tag
+	url = https://github.com/tenacityteam/libid3tag
+[submodule "src/contrib/libjpeg"]
+	path = src/contrib/libjpeg
+	url = https://github.com/thorfdbg/libjpeg
+[submodule "src/contrib/libmad"]
+	path = src/contrib/libmad
+	url = https://github.com/markjeee/libmad

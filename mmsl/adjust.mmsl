@@ -1,0 +1,341 @@
+/////////////////////////////////////////////
+// set current settings:
+on load_adjustments > 0
+	screen.brightness = settings.brightness
+	screen.contrast = settings.contrast
+	screen.saturation = settings.saturation
+on load_adjustments == 1
+	mute = 1
+	player.volume = settings.volume
+	mute = 0
+
+on player.volume == 0
+	on load_adjustments == 1
+		do_mute = 1
+
+/////////////////////////////////////////////
+// balloons (open/close/NA/...):
+
+on show_static_balloon != ""
+	balloon_timer = -1
+	balloon_start_hidden = 0
+	restore_timer_balloon = ""
+	show_balloon = show_static_balloon
+
+on show_timer_balloon != ""
+	balloon_timer = 3000
+	balloon_start_hidden = 0
+	restore_timer_balloon = ""
+	show_balloon = show_timer_balloon
+
+on show_fast_balloon != ""
+	balloon_timer = 1500
+	balloon_start_hidden = 0
+	restore_timer_balloon = ""
+	show_balloon = show_fast_balloon
+
+on show_fast_balloon_and_restore != ""
+	balloon_timer = 600
+	balloon_start_hidden = 0
+	restore_timer_balloon = restore_balloon
+	show_balloon = show_fast_balloon_and_restore
+
+on show_delayed_balloon != ""
+	balloon_timer = 300
+	balloon_timer2 = 3000
+	balloon_start_hidden = 1
+	restore_timer_balloon = ""
+	show_balloon = show_delayed_balloon
+	balloon.visible = 0
+
+on show_balloon == ""
+	delete .group == "balloon"
+
+on allow_balloons == 1
+	on show_balloon != ""
+		delete .group == "balloon"
+		add image balloon
+		balloon.group = "balloon"
+		balloon.src = "img/" + show_balloon + ".gif"
+		balloon.x = screen.right - balloon.width
+		balloon.y = screen.top
+		balloon.timer = balloon_timer
+
+on restore_timer_balloon == ""
+	on balloon_start_hidden == 0
+		on balloon.timer == 0
+			delete .group == "balloon"
+
+	on balloon_start_hidden == 1
+		on balloon.timer == 0
+			balloon.visible = 1
+			balloon_start_hidden = 0
+			balloon.timer = balloon_timer2
+
+on restore_timer_balloon != ""
+	on balloon.timer == 0
+		delete .group == "balloon"
+		show_static_balloon = restore_timer_balloon
+
+////////////////////////////
+// balloon text:
+
+on show_balloon_text != ""
+	add text balloon_text
+	balloon_text.group = "balloon"
+	balloon_text.valign = "center"
+	balloon_text.font = font2
+	balloon_text.x = screen.right - balloon.width + 64
+	balloon_text.y = screen.top + 28
+	balloon_text.color = colors.yellow
+	balloon_text.backcolor = -1
+	balloon_text.value = show_balloon_text
+
+///////////////////////////////////////////////
+// video modes:
+
+on pad.key == "vmode"
+	screen.switch = "next"
+
+on screen.tvstandard == "ntsc" && screen.tvout == "composite"
+	show_timer_balloon = "vmodes/ntsccompyc"
+on screen.tvstandard == "ntsc" && screen.tvout == "ypbpr"
+	show_timer_balloon = "vmodes/ntsccompyuv"
+on screen.tvstandard == "ntsc" && screen.tvout == "rgb"
+	show_timer_balloon = "vmodes/ntscscart"
+on screen.tvstandard == "pal" && screen.tvout == "composite"
+	show_timer_balloon = "vmodes/palcompyc"
+on screen.tvstandard == "pal" && screen.tvout == "ypbpr"
+	show_timer_balloon = "vmodes/palcompyuv"
+on screen.tvstandard == "pal" && screen.tvout == "rgb"
+	show_timer_balloon = "vmodes/palscart"
+on screen.tvstandard == "480p" && screen.tvout == "ypbpr"
+	show_timer_balloon = "vmodes/480pyuv"
+on screen.tvstandard == "576p" && screen.tvout == "ypbpr"
+	show_timer_balloon = "vmodes/576pyuv"
+on screen.tvstandard == "720p" && screen.tvout == "ypbpr"
+	show_timer_balloon = "vmodes/720pyuv"
+on screen.tvstandard == "1080i" && screen.tvout == "ypbpr"
+	show_timer_balloon = "vmodes/1080iyuv"
+
+on screen.tvstandard != ""
+	load_adjustments = 2
+
+///////////////////////////////////////////////////
+// Brightness/Contrast/Saturation:
+on setup == 0 && adjustment == 0 && (drive.mediatype != "dvd" || dvd != 0)
+	on do_setup == 1
+		do_setup = 0
+		adjustment = 1
+		delete .group == "vol"
+		delete .group == "volback"
+		add image adjback
+			adjback.group = "volback"
+			adjback.src = "img/adjustment.gif"
+			adjback.halign="center"
+			adjback.valign="bottom"
+			adjback.x = (screen.right + screen.left)/2
+			adjback.y = screen.bottom
+		add rect adjcur
+			adjcur.group = "volback"
+			adjcur.x = adjback.x - 100
+			adjcur.width = 230
+			adjcur.height = 25
+			adjcur.round = 5
+			adjcur.color = colors.yellow
+			adjcur.backcolor = -1
+		update_adj = 0
+		cur_adj = cur_adj	// update
+
+on adjustment == 0
+	cur_adj = 0
+	screen.update = 1
+
+on adjustment == 1
+	on adjback.timer == 0
+		delete .group == "volback"
+		delete .group == "vol"
+		adjustment = 0
+		settings.brightness = screen.brightness
+		settings.contrast = screen.contrast
+		settings.saturation = screen.saturation
+
+	on cur_adj < 3
+		on do_setup == 1
+			do_setup = 0
+			adjback.timer = 3000
+			pad.key = "down"
+
+	on cur_adj == 3
+		on do_setup == 1
+			adjback.timer = 0
+
+	on cur_adj >= 0
+		adjcur.y = adjback.y - 130 + cur_adj * 30
+
+	on update_adj == 0
+		screen.update = 0
+		delete .group == "vol"
+
+	on update_adj == 0
+		adjback.timer = 3000
+		adj_value = screen.brightness
+		adjclr = colors.darkblue + (cur_adj == 0) * 250 /* white */
+	on update_adj == 1
+		adj_value = screen.contrast
+		adjclr = colors.darkblue + (cur_adj == 1) * 250 /* white */
+	on update_adj == 2
+		adj_value = screen.saturation
+		adjclr = colors.darkblue + (cur_adj == 2) * 250 /* white */
+	on update_adj == 3
+		adj_value = (player.audio_offset + 5000) / 10
+		adjclr = colors.darkblue + (cur_adj == 3) * 250 /* white */
+
+
+	on update_adj >= 0 && update_adj < 4
+		add rect adj
+			adj.group = "vol"
+			adj.x = adjback.x - 95 + adj_value * 212 / 1000
+			adj.y = adjback.y - 125 + update_adj * 30
+			adj.width = 7
+			adj.height = 15
+			adj.round = 2
+			adj.color = -1
+			adj.backcolor = adjclr
+		update_adj = update_adj + 1
+
+	on update_adj == 3
+		screen.update = 1
+
+	on cur_adj < 0
+		cur_adj = 3
+	on cur_adj == 0
+		on adj_plus != 0
+			screen.brightness = screen.brightness + adj_plus
+	on cur_adj == 1
+		on adj_plus != 0
+			screen.contrast = screen.contrast + adj_plus
+	on cur_adj == 2
+		on adj_plus != 0
+			screen.saturation = screen.saturation + adj_plus					
+	on cur_adj == 3
+		on adj_plus != 0
+			player.audio_offset = player.audio_offset + adj_plus * 5
+
+
+	on pad.key == "left" || pad.key == "volume_down"
+		pad.key = ""
+		adj_plus = -20
+		update_adj = 0
+
+	on pad.key == "right" || pad.key == "volume_up"
+		pad.key = ""
+		adj_plus = 20
+		update_adj = 0
+
+	on pad.key == "up" || pad.key == "prev"
+		pad.key = ""
+		cur_adj = (cur_adj - 1) % 4
+		update_adj = 0
+
+	on pad.key == "down" || pad.key == "next"
+		pad.key = ""
+		cur_adj = (cur_adj + 1) % 4
+		update_adj = 0
+
+	on pad.key == "cancel" || pad.key == "return"
+		pad.key = ""
+		screen.brightness = 500
+		screen.contrast = 500
+		screen.saturation = 500
+		player.audio_offset = 0
+		update_adj = 0
+
+	on pad.key == "enter"
+		pad.key = ""
+		adjback.timer = 0
+
+///////////////////////////////////////////////////
+// volume:
+
+on pad.key == "volume_up"
+	release_mute = 1
+	player.volume = player.volume + 10
+
+on pad.key == "volume_down"
+	release_mute = 1
+	player.volume = player.volume - 10
+
+on pad.key == "mute"
+	do_mute = 1
+on mute == 0
+	on do_mute == 1
+		do_mute = 0
+		mute = 1
+		saved_volume = player.volume
+		player.volume = 0
+		add image muteballoon
+		muteballoon.group = "mute"
+		muteballoon.src = "img/mute.gif"
+		muteballoon.x = screen.right - muteballoon.width
+		muteballoon.y = screen.top
+		
+on mute == 1
+	on do_mute == 1
+		do_mute = 0
+		release_mute = 1
+
+	on release_mute == 1
+		delete .group == "mute"
+		player.volume = saved_volume
+		mute = 0	
+
+on mute == 0
+	on player.volume >= 0
+		delete .group == "vol"
+		delete .group == "volback"
+		add image volback
+		volback.group = "volback"
+		volback.halign="center"
+		volback.valign="bottom"
+		volback.x = (screen.right + screen.left)/2
+		volback.y = screen.bottom
+		volback.src = "img/volbkgrnd.gif"
+		vol_x = 0
+		screen.update = 0
+		vol_cnt = 0
+		on vol_cnt < player.volume
+			add image vol
+			vol.group = "vol"
+			vol.x = volback.x - 90 + vol_x
+			vol.y = volback.y - 40
+			vol.src = "img/volpoint.gif"
+			vol_x = vol_x + 19
+			vol_cnt = vol_cnt + 10
+		on vol_cnt >= player.volume
+			screen.update = 1
+			volback.timer = 1000
+
+on volback.timer == 0
+	delete .group == "vol"
+	delete .group == "volback"
+	settings.volume = player.volume
+
+on player.volume == 0
+	on volback.timer == 0
+		do_mute = 1
+
+///////////////////////////////////////////////////
+// Frame rate autodetect:
+
+on player.frame_rate == 25000 || player.frame_rate == 50000
+	on autodetect_pal_ntsc == 1
+		kernel.print = "Autodetect: PAL (" + player.frame_rate + " fps)"
+		screen.tvstandard = "pal"
+		autodetect_pal_ntsc = 0
+//on player.frame_rate == 23976 || (player.frame_rate >= 29000 && player.frame_rate <= 30000) || player.frame_rate == 60000
+on autodetect_pal_ntsc == 1
+	kernel.print = "Autodetect: NTSC (" + player.frame_rate + " fps)"
+	screen.tvstandard = "ntsc"
+	autodetect_pal_ntsc = 0
+

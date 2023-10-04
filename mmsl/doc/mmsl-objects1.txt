@@ -1,0 +1,849 @@
+
+- kernel
+  * Base firmware settings and control.
+  - power [w/o]
+    * Can be set by script to switch the player, but normally is set automatically via 'POWER' button.
+    = 0
+      * Set it to turn the player off
+    = 1 (default)
+      * Set by default when the player started and initialized or when it is turned on
+      * When the player is turned off (suspended), mmsl events are not triggered.
+    = 2
+      * halt firmware
+  - frequency [r/w]
+    * Get or set CPU frequency (for experts only!)
+  - chip [r/o]
+    * Get player chip revision string.
+  - free_memory [r/o]
+    * Get free kernel memory, bytes.
+  - flash_memory [r/o]
+    * Get Flash memory size, in bytes.
+  - print [w/o]
+    * Output a string to debug console (Press 'P/N' to show or hide console on the screen)
+  - firmware_version [r/o]
+    * Current version of firmware kernel
+  - mmsl_version [r/o]
+    * Current version of MMSL interpreter
+  - mmsl_errors [r/w]
+    * Filter console messages
+    = "none" (default, no error logging)
+    = "critical" (only critical errors reported)
+    = "general" (only general & critical errors reported)
+    = "all" (all errors & warnings)
+  - run [w/o]
+    * Run external binary file (Ex: kernel.run="file.bin")
+    * Maximum 20 arguments allowed (space-separated).
+  - random [r/o]
+    * Get a random number (0..32767)
+
+=======================================================================================
+
+- screen
+  * On-screen display (OSD) object with different settings. 
+  * Use separate graphical objects for user interface.
+  - switch [r/w]
+    * Turns the screen on or off
+    = 0
+      * The screen is turned off automatically when kenrel.power=0
+    = 1 (default)
+    = "next"
+      * switch next video mode
+  - update [r/w]
+    = 0
+      * Turns screen auto-update off
+    = 1
+      * Turns screen auto-update on
+    = "now"
+      * Update the screen now
+  - tvstandard [r/w]
+    * TV standard.
+    = "pal" (default)
+    = "ntsc"
+  - tvout [r/w]
+    * TV output.
+    = "composite" (default)
+      * Composite/S-Video
+    = "ypbpr"
+      * Component/YPbPr
+    = "rgb"
+      * Composite/RGB via SCART
+  - left [r/o]
+    * TV-safe visible area rectangle left x coordinate, in pixels.
+  - top [r/o]
+    * TV-safe visible area rectangle top y coordinate, in pixels.
+  - right [r/o]
+    * TV-safe visible area rectangle right x coordinate, in pixels.
+  - bottom [r/o]
+    * TV-safe visible area rectangle bottom y coordinate, in pixels.
+  - palette [r/w]
+    * External 256-color palette file name (.ACT)
+    * Also resets all alpha values to defaults (255).
+  - palidx [w/o]
+    * Used for setting alpha or color value. See 'palalpha' and 'palcolor'.
+    = 0-255
+  - palalpha [r/w]
+    * Set new alpha value to the current palette. See 'palidx'.
+    = 0-255 (255 = opaque, default for all indices)
+  - palcolor [r/w]
+    * Set new color value to the current palette. See 'palidx'.
+    = "#000000"-"#ffffff" or 24-bit integer
+  - font [r/w]
+    * Default font used for new text objects. Set it to the font file name (external .FNT file).
+  - color [r/w]
+    * Color index for font & drawing operations (default value for new objects)
+    = 0-255
+  - backcolor [r/w]
+    * Background color index for font & drawing operations (default value for new objects)
+    = 0-255
+    = -1 (default)
+      * For transparent background ('trcolor' value is used)
+  - trcolor [r/w]
+    * Transparent color index
+    = 0 (default)
+  - halign [r/w]
+    * Default horizontal text (and other objects') align, used for created objects
+    = "left" (default)
+    = "center"
+    = "right"
+  - valign [r/w]
+    * Default hertical text (and other objects') align, used for created objects
+    = "top" (default)
+    = "center"
+    = "bottom"
+  - back [r/w]
+    * JPEG file name for background image
+    = "" (default)
+      * For black background
+  - back_left [r/w]
+  	* Left coordinate of JPEG output rect, in background pixels (0..719).
+  	* Used for picture previews.
+  	= 0 (default)
+  - back_top [r/w]
+  	* Top coordinate of JPEG output rect, in background pixels (0..479).
+  	* Used for picture previews.
+    = 0 (default)
+  - back_right [r/w]
+  	* Right coordinate of JPEG output rect, in background pixels (0..719).
+  	* Used for picture previews.
+  	* For external images (not from flash memory), auto aspect-ration correction is used.
+  	= 719 (default)
+  - back_bottom [r/w]
+  	* Bottom coordinate of JPEG output rect, in background pixels (0..479).
+  	* Used for picture previews.
+  	= 479 (default)
+  - preload [w/o]
+    * Pre-load GIF image in memory. Set it to .gif file path.
+    = "" (default)
+      * Set it to empty string to unload all images from memory.
+  - hzoom [r/w]
+    * Used to scale background image or video horizontally, in percents
+    = "in"
+    = "out"
+    = 100 (default)
+    = 10-1000
+      * Set zoom value in percents
+  - vzoom [r/w]
+    * Used to scale background image or video vertically, in percents
+    = "in"
+    = "out"
+    = 100 (default)
+    = 10-1000
+      * Set zoom value in percents
+  - hscroll [r/w]
+    * Horizontal offset for background image or video (<0 for left, >0 for right).
+    = 0 (default)
+  - vscroll [r/w]
+    * Vertical offset for background image or video (<0 for left, >0 for right).
+    = 0 (default)
+  - rotate [r/w]
+    * Used for background image, in degrees
+    = 0 (default)
+    = 0,90,180,270
+    = "auto"
+      * Set this to auto-detect image orientation (using Exif data).
+  - brightness [r/w]
+    * Set TV brightness
+    = 0..1000
+    = 500 (default)
+  - contrast [r/w]
+    * Set TV contrast
+    = 0..1000
+    = 500 (default)
+  - saturation [r/w]
+    * Set TV saturation
+    = 0..1000
+    = 500 (default)
+  - fullscreen [r/w]
+    * Set OSD fullscreen mode
+    = 0 (default)
+      * OSD has 30/31 height by default.
+    = 1
+      * Full height, 480 pixels.
+
+=======================================================================================
+
+- pad
+  * Front panel and IR-remove control object. Needed to process user input.
+  - key [r/o]
+    * Key code pressed by user. Keys for IR-remote and front panel are combined.
+    = "power"
+    = "eject"
+    = "one"
+    = "two"
+    = "three"
+    = "four"
+    = "five"
+    = "six"
+    = "seven"
+    = "eight"
+    = "nine"
+    = "zero"
+    = "cancel"
+    = "search"
+    = "enter"
+    = "osd"
+    = "subtitle"
+    = "setup"
+    = "return"
+    = "title"
+    = "pn"
+    = "menu"
+    = "ab"
+    = "repeat"
+    = "up"
+    = "down"
+    = "left"
+    = "right"
+    = "volume_down"
+    = "volume_up"
+    = "pause"
+    = "rewind"
+    = "forward"
+    = "prev"
+    = "next"
+    = "play"
+    = "stop"
+    = "slow"
+    = "audio"
+    = "vmode"
+    = "mute"
+    = "zoom"
+    = "program"
+    = "pbc"
+    = "angle"
+  - display [w/o]
+    * To display the string to the front panel.
+  - set [w/o]
+    * Set special symbol of the front panel display.
+    = "play"
+      * 'Play' symbol.
+    = "pause"
+      * 'Pause' symbol.
+    = "mp3"
+      * 'MP3' symbol.
+    = "dvd"
+      * 'DVD' symbol.
+    = "s"
+      * 'SVCD' symbol part.
+    = "v"
+      * 'VCD' symbol part.
+    = "cd"
+      * 'CD' symbol.
+    = "dolby"
+      * Dolby digital sound.
+    = "dts"
+      * DTS sound.
+    = "play_all"
+      * Play All.
+    = "play_repeat"
+      * Play Repeat.
+    = "pbc"
+      * VCD Playback Control.
+    = "camera"
+      * DVD camera/angle.
+    = "colon1"
+      * First ':'.
+    = "colon2"
+      * Second ':'
+  - clear [w/o]
+    * Clear entire front panel display or one special symbol.
+    * See also ::pad.set:: for possible special symbol values.
+    = "all"
+      * Clear entire display
+
+=======================================================================================
+
+- drive
+  * DVD player's drive object. Helps to detect media types and to control the drive tray.
+  - mediatype [r/w]
+    * Inserted disc type.
+    * You may change media type to force it for some strange discs.
+    = "none" (default)
+    = "dvd"
+    = "iso"
+    = "audio"
+    = "mixed"
+    = "hdd"
+  - tray [r/w]
+    * Drive tray status.
+    = "open"
+    = "close"
+    = "toggle"
+      * Set this to toggle tray status
+
+=======================================================================================
+
+- explorer 
+  * File/folder/playlist browser. Helps to create file or item lists.
+  - charset [r/w]
+    * Filesystem mount charset (see built-in charsets below)
+    = "iso8859-1" (default)
+    = "iso8859-2"
+    = "cp1251"
+	= "koi8-r"
+  - folder [r/w]
+    * Current source folder for the file or item list.
+    * If subfolder is set (explorer.folder = explorer.path), current position and list are saved.
+    * To restore the previous list and position, call: explorer.folder = ".."
+    = "/"
+      * root folder for mounted files (CD-ISO mode or HDD) or Audio-CD tracks.
+    = "cdrom/"
+      * For mounted files on CD/DVD-ROM drive. Equivalent to "/".
+    = "hdd/"
+      * For mounted files on hard disc drive. Equivalent to "/".
+    = "dvd/"
+      * for DVD titles and chapters
+    = "playlist/",...
+      * Virtual folder for playlist used as explorer.target to gather items.
+  - target [r/w]
+    * Current target folder (for item copying). Can be used for play-lists.
+    = "" (default)
+  - filter [r/w]
+    * Allows tracks, files or folders filtering and grouping.
+    = "up,folder,track,dvd,file" (default)
+      * Special 'up' folder goes first, then all folders, then CDDA tracks, then special DVD item, then all files.
+    = "track"
+      * CD-Audio tracks only
+    = "file"
+      * Files only
+    = "folder"
+      * Folders only
+    = "dvd"
+      * DVD items only
+    = ""
+      * No filtering, all items ungrouped.
+  - mask1 [r/w]
+    * A filemask to list only some file/item types, separated by commas (ex. "*.avi,*.mpg,*.dat").
+    * Several filemasks can be combined.
+    = "*.*" (default)
+  - mask2 [r/w]
+    * A filemask to list only some file/item types, separated by commas (ex. "*.avi,*.mpg,*.dat")
+    * Several filemasks can be combined.
+    = "*.*" (default)
+  - mask3 [r/w]
+    * A filemask to list only some file/item types, separated by commas (ex. "*.avi,*.mpg,*.dat")
+    * Several filemasks can be combined.
+    = "*.*" (default)
+  - mask4 [r/w]
+    * A filemask to list only some file/item types, separated by commas (ex. "*.avi,*.mpg,*.dat")
+    * Several filemasks can be combined.
+    = "*.*" (default)
+  - mask5 [r/w]
+    * A filemask to list only some file/item types, separated by commas (ex. "*.avi,*.mpg,*.dat")
+    * Several filemasks can be combined.
+    = "*.*" (default)
+  - path [r/o]
+    * Full path to the current file (like "/cdrom/dir/movie_file.avi") or CD-Audio track (like "/cdrom/1.cda").
+    * To play, it should be passed to the 'player' object [code: player.source = explorer.path]
+  - filename [r/o]
+    * The filename (without extension!) of the current item (like "movie_file")
+  - extension [r/o]
+    * Current file/item extension (like ".avi")
+    * Can be used to detect current file's type.
+  - drive_letter [r/o]
+    * Current drive letter (like "C") for hard disc drives.
+  - type [r/o]
+    * The type of the current item
+    = "item"
+      * A file or media stream.
+    = "folder"
+      * Folder
+    = "up"
+      * A Special item for up-folder jumps - "..".
+    = "dvd"
+      * Special DVD item (it means that the current folder contains a DVD movie).
+  - maskindex [r/o]
+  	* The index of the mask which included the current item.
+  	= 1-5
+  - filesize [r/o]
+    * Set if current item is a file, a size, in bytes.
+    * If real filesize greater than 2147483647 bytes (2 Gb limit), 
+    * then the filesize is given as negative value, in kilobytes.
+    = 0 (default)
+      * All folders have zero filesize.
+  - filetime [r/o]
+    * Set to 'last modified' date & time, if current item is a file
+    * Folowing string format is used: DD.MM.YYYY HH:MM
+    = "" (default)
+      * If filetime is not set or unknown/zero.
+  - count [r/o]
+    * Number of items
+  - sort [r/w]
+    * Items sorting
+    = "none"
+    = "normal"
+      * Alphabetical sort
+    = "inverse"
+      * Inverse alphabetical sort
+    = "random"
+      * Shuffle
+  - position [r/w]
+    * Current item position (zero-based index). For empty lists, the position is always -1.
+    = -1 (default)
+  - command [w/o]
+    * One can use commands to manipulate with the list and it's items.
+    = "update"
+      * Update the list from the current item source folder.
+      * Call it every time the folder, charset, filter or mask changes.
+    = "first"
+      * Jump to the first item.
+    = "last"
+      * Jump to the last item.
+    = "next"
+      * Move to the next item. Set to explorer.count if moved before the last item.
+    = "prev"
+      * Move to the previous item. Set to -1 if moved before the first item.
+    = "randomize"
+      * Initialize random sequence and jump to the first random item.
+    = "nextrandom"
+      * Move to the next random item (see explorer.command="randomize").
+      * Every item is passed through one time. Current item index set to -1 after the last one.
+    = "prevrandom"
+      * Move to the previous random item (see explorer.command="randomize").
+      * Every item is passed through one time. Current item index set to -1 after the first one reached.
+    = "remove"
+      * Remove current item from the list. The next item becomes current.
+    = "removeall"
+      * Remove all items from the list.
+    = "copy"
+      * Copy current item from source folder to target folder.
+      * No item duplicates allowed. 
+      * To check item existance in the target folder, use ::explorer.copied::.
+      * If the item copied, explorer.copied set to 1.
+    = "copyall"
+      * Copy all items from source folder to target folder.
+      * See explorer.command = "copy".
+    = "targetremove"
+      * Remove current item from the target folder. 
+      * Equivalent to explorer.command="remove" if the current folder is the same as target.
+      * If the item removed, explorer.copied set to 0.
+    = "targetremoveall"
+      * Remove all items from the target folder.
+  - find [w/o]
+    * Find given item path and set current item if found in this folder.
+    * If not found, the item position is set to -1.
+    = "" (default)
+  - copied [r/o]
+    * Set if the current item was already copied to the current target folder.
+    = 0 (default)
+    = 1
+
+=======================================================================================
+
+- player
+  * Object used to play or show media files on ISO, AudioCD or DVD discs.
+  * Uses internal code (for DVD and JPEG) or calls external binary players.
+  * Controlled by commands. Has special functionality for DVD discs.
+  - source [r/w]
+    * Media file source - set it to 'explorer.filepath' value for media file play/show
+    * or to the special folders for disc play (See 'explorer.folder' for details).
+    * File/disc is not read at this time. Use other commands to start playing or get file/disc info.
+  - playing [r/w]
+    * When player starts or stops playing, the player.playing is set to 1 or 0.
+    * Can be used to detect the player's state.
+    = 0 (default)
+      * Playing is stopped.
+      * Setting player.playing = 0 is equivalent to player.command = "stop"
+    = 1
+      * The player is playing now.
+      * Setting player.playing = 1 is equivalent to player.command = "play"
+  - saved [r/o]
+    * Set for DVD disc if it was already played (a limited number of discs is stored: 5).
+    = 0 (default)
+      * The DVD disc is inserted for the first time.
+    = 1
+      * The DVD disc was already played (the main part, not menu!).
+  - command [w/o]
+    = "info"
+      * Get media file info. Fills player variables - 'player.name', 'player.artist' and others.
+      * This may take some time - file reading is needed.
+  	= "play"
+  	  * Starts playing. Call it also after title/chapter is changed.
+  	= "continue"
+  	  * Continue playing from saved position.
+  	= "stop"
+  	  * Stops playing.
+  	= "pause"
+  	  * Pause play 
+  	= "step"
+  	  * Advance 1 frame.
+  	= "slow"
+  	  * Turn on slow forward (1/2).
+  	= "forward"
+  	  * Fastforward (and speed up/down for DVD).
+  	= "rewind"
+  	  * Rewind (and speed up/down for DVD).
+  	= "prev"
+  	  * Skip to previous DVD chapter; or stop playing media file.
+  	= "next"
+  	  * Skip to the next DVD chapter; or stop playing media file.
+  	= "press"
+  	  * Press 'enter' button for DVD menu.
+  	= "left"
+  	  * Move DVD menu highlight left.
+  	= "right"
+  	  * Move DVD menu highlight right.
+  	= "up"
+  	  * Move DVD menu highlight up.
+  	= "down"
+  	  * Move DVD menu highlight down.
+  	= "menu"
+  	  * Call default DVD menu ('escape' menu).
+	= "rootmenu"
+  	  * Call root DVD menu.
+  	= "return"
+  	  * Return to previous DVD menu.
+  	= "cancel"
+  	  * Undo user-set time/title/chapter before play continues.
+  	= "angle"
+  	  * Switch next DVD camera angle.
+  	= "audio"
+  	  * Switch next DVD audio stream. 'language_audio' is updated.
+  	= "subtitle"
+  	  * Switch next DVD subtitles language or turn them off. 'language_subtitle' is updated.
+  - select [w/o]
+    * Set selection range markers for the DVD movie or AudioCD.
+    = ""
+    = "begin"
+    = "end"
+  - repeat [r/w]
+    * Set repeat mode
+    = "none" (default)
+      * Play one time, no repeat.
+    = "selection"
+      * Repeat selected fragment. (See 'selection')
+    = "track"
+      * Repeat current track (for AudioCDs).
+    = "all"
+      * Repeat all disc.
+    = "random"
+      * Random play.
+  - speed [r/w]
+    * Current playing speed.
+    = 0 (default)
+      * Paused or stopped.
+    = 1
+      * Normal play
+    = 8
+      * Forward x8
+    = 16
+	  * Forward x16
+    = 32
+      * Forward x32
+    = 48
+      * Forward x48
+    = -8
+      * Backward x8
+    = -16
+      * Backward x16
+    = -32
+      * Backward x32
+    = -48
+      * Backward x48
+    = "1/2"
+      * Slow forward x1/2
+    = "1/4"
+      * Slow forward x1/4
+    = "1/8"
+      * Slow forward x1/8
+  - menu [r/w]
+    * DVD menu control
+    = 0 (default)
+      * We're not in menu (Or set to 1 to resume playback)
+    = 1
+      * We're in menu or not playing (Or set to 1 for menu jump)
+    = "escape"
+      * Jump to the root menu or resume playback if in menu
+    = "title"
+      * Jump to the title menu
+    = "root"
+      * Jump to the root menu
+    = "subtitle"
+      * Jump to subtitles selection menu
+    = "audio"
+      * Jump to audio selection menu
+    = "angle"
+      * Jump to angle/camera selection menu
+    = "chapters"
+      * Jump to DVD chapters selection menu
+  - language_menu [r/w]
+    * Default language for DVD menu.
+    * You can set two-letter codes ("en", "fr" etc.) or full strings ("English", "French").
+    * Two-letter codes will be automatically converted into the full strings.
+    = "English" (default)
+  - language_audio [r/w]
+    * DVD set default audio language or change current audio stream if playing.
+    * You can set two-letter codes ("en", "fr" etc.) or full strings ("English", "French").
+    * Two-letter codes will be automatically converted into the full strings.
+    = "English" (default)
+  - language_subtitle [r/w]
+    * DVD default subtitle language or change current if playing.
+    * You can set two-letter codes ("en", "fr" etc.) or full strings ("English", "French").
+    * Two-letter codes will be automatically converted into the full strings.
+    = "English" (default)
+    = ""
+      * Set to hide subtitles.
+  - subtitle_charset [r/w]
+    * Used in subtitle files processing for video player. Set this before starting play!
+    = "" (default)
+      * No processing required. The subtitle file charset corresponds to font charset.
+    = "koi8-r"
+      * Translate KOI8-R to default WIN/ISO charset.
+  - subtitle_wrap [r/w]
+    * Number of letters in the text string before soft line break. Should be set to fit entire subtitle on the screen.
+    * Used in subtitle files processing for video player. Set this before starting play!
+    = 35 (default)
+  - subtitle [r/o]
+    * Returns subtitle string that should be currently shown on the screen.
+    = "" (default)
+  - angle [r/w]
+    * DVD camera angle.
+    = 1 (default)
+  - volume [r/w]
+    * Sound volume (0-100).
+    = 50 (default)
+  - balance [r/w]
+    * Volume stereo balance. -100 = left channel only, 100 = right channel only
+    = 0 (default)
+      * Centered
+    = -100..100
+  - audio_offset [r/w]
+    * Number of msecs added to audio for audio/video sync. correction
+    = 0 (default)
+    = -5000..5000
+  - time [r/w]
+    * Current playing time, in seconds.
+    * Also one can set this variable to seek the time position.
+    = 0 (default)
+  - title [r/w]
+    * Current DVD title number (1..99). Set player.command="play" to apply the title/chapter changes.
+    = 0 (default)
+  - chapter [r/w]
+    * Current DVD chapter (part) number (1..999). Set player.command="play" to apply the title/chapter changes.
+    = 0 (default)
+  - name [r/o]
+    * Name of the movie/song or DVD disc. Use player.command="info" before.
+    = "" (default)
+  - artist [r/o]
+    * Move/song artist info, if present. Use player.command="info" before.
+    = "" (default)
+  - audio_info [r/o]
+    * Info about audio data type & quality. Use player.command="info" before.
+    = "" (default)
+  - video_info [r/o]
+    * Info about video data type & quality. Use player.command="info" before.
+    = "" (default)
+  - audio_stream [r/o]
+    * Current audio stream number (1..8) or 0 for no audio.
+    = 0 (default)
+  - subtitle_stream [r/o]
+    * Current subtitle stream number (1..32) or 0 for hidden subtitles.
+    = 0 (default)
+  - length [r/o]
+    * Total length of the movie/song, in seconds. Use player.command="info" before.
+    = 0 (default)
+  - num_titles [r/o]
+    * Total number of titles in DVD. (0..99)
+    = 0 (default)
+  - num_chapters [r/o]
+    * Total number of chapters in current DVD title. (0..999)
+    = 0 (default)
+  - width [r/o]
+    * Video frame width, in pixels. Set for DVD or video file when started playing.
+    = 0 (default)
+  - height [r/o]
+    * Video frame height, in pixels. Set for DVD or video file when started playing.
+    = 0 (default)
+  - frame_rate [r/o]
+    * Video frame rate, in frames per millisecond (for example, 25000 means 25 fps).
+    = 0 (default)
+  - color_space [r/o]
+    * Color space used. Use player.command="info" before.
+    = "" (default)
+    = "ycbcr"
+    = "grayscale"
+  - debug [r/w]
+    * Set to 1 for player's debug info output (for internal players only).
+    = 0 (default)
+    = 1
+  - error [r/o]
+    * Last error string code. Only non-empty errors trigger the variable. 
+    * Every successful player's action silently clears the error variable.
+    = "" (default)
+      * Everything's OK.
+    = "invalid"
+      * The command or player operation is currently not allowed.
+    = "badaudio"
+      * Unsupported audio format.
+    = "badvideo"
+      * Unsupported video codec.
+    = "wait"
+      * Player requires some time. It's not actually an error.
+    = "corrupted"
+      * Read errors etc. Player-dependant.
+
+=======================================================================================
+
+- settings
+  * Firmware settings stored in EEPROM are controlled by this object.
+  - command [w/o]
+    = "defaults"
+      * Restore default settings
+  - audioout [r/w]
+    * Store audio output type.
+    = "analog" (default)
+    = "digital"
+  - tvtype [r/w]
+    * Used by video player.
+    = "letterbox" (default)
+      * 4:3 letterbox
+    = "panscan"
+      * 4:3 panscan
+    = "wide"
+      * 16:9
+    = "vcenter"
+      * 16:9 panscan
+  - tvstandard [r/w]
+    * See ::screen.tvstandard::.
+    = "pal" (default)
+    = "ntsc"
+    = "480p"
+    = "576p"
+    = "720p"
+    = "1080i"
+  - tvout [r/w]
+    * See ::screen.tvout::.
+    = "composite" (default)
+      * Composite/S-Video
+    = "ypbpr"
+      * Component/YPbPr
+    = "rgb"
+      * Composite/RGB via SCART
+  - dvi [r/w]
+    * DVI Configuration index. (reserved for future use).
+  - hq_jpeg [r/w]
+    * High-Quality JPEG viewer mode.
+    = 0
+      * Default
+    = 1
+  - hdd_speed [r/w]
+    * Change SATA/PATA HDD speed
+    = "fastest" (default)
+    = "limited"
+      * Used for some SATA adapters
+    = "slow"
+      * Used for some SATA adapters or PATA HDD drives
+  - dvd_parental [r/w]
+    * DVD Parental control level
+    = 0..8
+  - dvd_mv [r/w]
+    * DVD macrovision check flag
+    = 0 (default)
+    = 1
+  - dvd_lang_menu [r/w]
+    * Default DVD menu language code
+    = "??"
+      * Two character language code ("en", "fr", ...)
+  - dvd_lang_audio [r/w]
+    * Default DVD audio language code
+    = "??"
+      * Two character language code ("en", "fr", ...)
+  - dvd_lang_spu [r/w]
+    * Default DVD subtitle language code
+    = "??"
+      * Two character language code ("en", "fr", ...)
+  - volume [r/w]
+    * Store audio volume
+    = 0..100
+    = 50 (default)
+  - balance [r/w]
+    * Volume stereo balance. -100 = left channel only, 100 = right channel only
+    = -100..100
+    = 0 (default)
+      * Centered
+  - brightness [r/w]
+    * Store/Load TV brightness (depends on TV mode)
+    = 0..1000
+    = 500 (default)
+  - contrast [r/w]
+    * Store/Load TV contrast (depends on TV mode)
+    = 0..1000
+    = 500 (default)
+  - saturation [r/w]
+    * Store/Load TV saturation (depends on TV mode)
+    = 0..1000
+    = 500 (default)
+  - user1 [r/w]
+    * User-defined integer
+  - user2 [r/w]
+    * User-defined integer
+  - user3 [r/w]
+    * User-defined integer
+  - user4 [r/w]
+    * User-defined integer
+  - user5 [r/w]
+    * User-defined integer
+  - user6 [r/w]
+    * User-defined integer
+  - user7 [r/w]
+    * User-defined integer
+  - user8 [r/w]
+    * User-defined integer
+  - user9 [r/w]
+    * User-defined integer
+  - user10 [r/w]
+    * User-defined integer
+  - user11 [r/w]
+    * User-defined integer
+  - user12 [r/w]
+    * User-defined integer
+  - user13 [r/w]
+    * User-defined integer
+  - user14 [r/w]
+    * User-defined integer
+  - user15 [r/w]
+    * User-defined integer
+  - user16 [r/w]
+    * User-defined integer
+
+=======================================================================================
+
+- flash
+  * Object used for accessing the FLASH memory.
+  * Flashing begins automatically when both file and address is set.
+  * Setting file or address during the flashing (when progress < 100) will interrupt/restart the procedure.
+  * CAUTION! If address is zero, boot loader is overwriten, which can damage your player.
+  - file [r/w]
+    * File name of firmware binary.
+  - address [r/w]
+    * Starting address to flash.
+  - progress [r/o]
+    * Progress indicator, in per cents.
+    = 0 (default)
+    = 0..100
+    = -1
+      * If there was a read or flash error, the progress is set to -1.
+    = -2
+      * Verification failed.
+
+=======================================================================================

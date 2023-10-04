@@ -1,0 +1,397 @@
+
+////////////////////////
+// file player control
+
+on explorer.count > 0 && playing == 0
+	on pad.key == "play"
+		do_start_play_all = 1
+
+// play all or random
+on play_mode == "all"
+	on do_start_play_all == 1
+		play_first_cmd = "" // "first"
+		play_next_cmd = "next"
+		play_prev_cmd = "prev"
+		play_cmd = play_next_cmd
+		do_play_all = 1
+on play_mode == "random"
+	on do_start_play_all == 1
+		play_first_cmd = "randomize"
+		play_next_cmd = "nextrandom"
+		play_prev_cmd = "prevrandom"
+		play_cmd = play_next_cmd
+		do_play_all = 1
+
+on do_play_all == 1
+	kernel.print = "PLAY " + play_mode
+	mplay.src = "img/playon.gif"
+	cur_play_pos = 0
+	do_init_play_all = 1
+
+on do_play_all == 0
+	play_cur_pos = -1
+	mplay.src = "img/playoff.gif"
+
+on do_init_play_all == 1
+	saved_pos = explorer.position
+	explorer.command = play_first_cmd	// "first" or "randomize"
+	cur_play_pos = explorer.position
+	play_pos = cur_play_pos
+	play_path = explorer.path
+	play_mediatype = explorer.maskindex
+	play_type = explorer.type
+	explorer.position = saved_pos
+	do_init_play_all = 2
+
+on cur_play_pos < 0 || cur_play_pos >= explorer.count
+	on do_init_play_all == 2
+		do_init_play_all = 0
+		do_play_all = 0
+on play_type != "file" && play_type != "track" && play_type != "folder"
+	on do_init_play_all == 2
+		do_init_play_all = 0
+		do_continue_play = 1
+on do_init_play_all == 2
+	do_init_play_all = 0
+	was_continue_play = 0
+	do_play = 1
+///////////////////////////////////////////////////
+
+
+// first, stop previous play
+on player.playing == 1
+	on do_play == 1
+		kernel.print = "STOP PLAYING BEFORE PLAY"
+		stop_before_play = 1
+		player.command = "stop"
+
+// stop viewer if we don't view pics anymore
+on do_show_photo == 1 && play_mediatype != 3 /* photo */
+	on do_play == 1
+		kernel.print = "STOP VIEWER BEFORE PLAY"
+		stop_viewer = 1
+
+// determine file type
+on play_type == "folder" && play_path == "/cdrom/VIDEO_TS"
+	on do_play == 1
+		play_path = "dvd/"
+		play_type = "dvd"
+
+on play_type == "track" || play_type == "folder"
+	on do_play == 1
+		do_play = 0
+		do_play_audio = 1
+
+on play_type == "file"
+	on explorer.filename == "romfs" && explorer.extension == ".bin"
+		on do_play == 1
+			do_play = 0
+			flash_firmware = play_path
+
+
+on play_type == "dvd"
+	on do_play == 1
+		do_play = 0
+		update_list_loop = 0
+		del_info = 1
+		delete .group != "mute" && .group != "scr"
+		screen.update = "now"
+		play_cur_pos = play_pos
+		player.source = play_path
+		player_source_set = 1
+		// start as normal DVD
+		pad.key = ""
+		drive.mediatype = "dvd"
+
+on play_mediatype == 2		/////// audio
+	on do_play == 1
+		do_play_audio = 1
+on play_mediatype == 3 		/////// photo
+	on do_play == 1
+		do_show_photo = 1
+on play_mediatype == 4 		/////// subtitles
+	on explorer.copied == 0
+		on do_play == 1
+			do_play = 0
+			explorer.command = "copy"	// just add them to playlist
+			update_list = 1
+	on explorer.copied == 1
+		on do_play == 1
+			do_play = 0
+			explorer.command = "targetremove"
+			update_list = 1
+
+///////////////////////////////////////////////////////////////////////
+
+on do_play_audio == 0 && do_show_photo == 0 && play_mediatype != 4 && play_type != "folder"
+    on update_list_loop == 1
+		on do_play == 1
+			explorer.position = cur_play_pos
+	on do_play == 1
+		update_list_loop = 0
+		del_info = 1
+		delete .group != "mute" && .group != "scr"
+		screen.back = ""
+		screen.update = "now"
+		screen.update = 1
+		allow_zoom = 1
+		do_play_video = 1
+
+on player.playing == 0
+	// disable ISO interface controls when playing video
+	on do_play_video == 1
+		old_in_menu = in_menu
+		in_menu = 2
+		screen.preload = ""
+		// this is for multiple audio tracks
+		screen.preload = "img/player/audio.gif"
+		screen.preload = "img/player/subtitle.gif"
+		screen.preload = "img/player/subtitleoff.gif"
+
+		add text subtitle
+			subtitle.halign="center"
+			subtitle.valign="bottom"
+			subtitle.x = (screen.right + screen.left) / 2
+			subtitle.y = screen.bottom
+			subtitle.font = font2
+			subtitle.color = colors.white
+			subtitle.backcolor = 1
+			subtitle.textalign = "center"
+			subtitle.style = "outline"
+			subtitle.value = ""
+
+	    on settings.user4 == 0
+			on set_sub_charset == 1
+				kernel.print = "subt_charset=" + subt_charset
+				player.subtitle_charset = subt_charset
+		on settings.user4 == 1
+			on set_sub_charset == 1
+				player.subtitle_charset = "koi8-r"
+
+		set_sub_charset = 1
+		player.subtitle_wrap = 35
+
+		start_play = 1
+	on do_play_audio == 1
+		start_play = 1
+
+	// PLAY!
+	on start_play == 1
+		start_play = 0
+		do_play = 0
+		kernel.print = "PLAY " + play_path
+		play_cur_pos = play_pos
+		player.source = play_path
+		show_timer_balloon = "player/play"
+		playing = 1
+		we_need_info = 1
+		stop_before_play = 0
+		player.command = "play"
+		allow_osd = 1
+		restore_osd_for_continue = 1
+
+// we want file info for OSD during play
+we_asked_info_for != player.source
+	on we_need_info == 1
+		we_asked_info_for = player.source
+		player.command = "info"
+		we_need_info = 0
+
+on was_continue_play == 1
+	on restore_osd_for_continue == 1
+		restore_osd_for_continue = 0
+		//kernel.print = "player.playing="+player.playing
+		do_osd = old_play_osd
+
+on playing == 1
+	/////// if playing stopped:
+	on player.playing == 0
+		play_cur_pos = -1
+		cancel_search = 1
+		tmp_play_osd = osd
+		cancel_osd = 1
+		show_fast_balloon = "player/stop"
+		pad.clear = "all"
+		pad.display = "ISO"
+	// if video stopped - restore GUI
+	on do_play_video == 1
+		on player.playing == 0
+			kernel.print = "Restore ISO interface..."
+			in_menu = old_in_menu
+			redraw_iso = 1
+			screen.update = "now"
+	on player.playing == 0
+		do_play_audio = 0
+		do_play_video = 0
+		do_show_photo = 0
+		cancel_zoom = 1
+		allow_zoom = 0
+		allow_osd = 0
+		playing = 0
+		playing_stopped = 1
+		stop_before_play = 0
+
+	on do_continue_play == 0
+		on player.source != play_path
+			play_path = player.source
+			kernel.print = "PLAY NEXT/PREV: " + play_path
+
+// in "play all/random" mode, we continue with the next file
+on do_play_all == 1 && stop_before_play == 0
+	on playing_stopped == 1
+		was_continue_play = 0
+		old_play_osd = tmp_play_osd		// before we canceled
+		play_cmd = play_next_cmd
+		do_continue_play = 1
+
+// play next/prev file...
+on do_play_video == 1 || do_show_photo == 1 || osd == 1
+	on play_type != "folder"
+		on pad.key == "next"
+			old_play_osd = osd
+			cancel_osd = 1
+			play_cmd = play_next_cmd
+			do_continue_play = 1
+		on pad.key == "prev"
+			old_play_osd = osd
+			cancel_osd = 1
+			play_cmd = play_prev_cmd
+			do_continue_play = 1
+	on play_type == "folder"
+		on pad.key == "next"
+			player.command = "next"
+		on pad.key == "prev"
+			player.command = "prev"
+
+//////// continue playing the next file
+on do_continue_play == 1
+	saved_pos = explorer.position
+	explorer.position = cur_play_pos
+	explorer.command = play_cmd		// next or prev (normal/random)
+	cur_play_pos = explorer.position
+
+	kernel.print = "Continue Play: " + explorer.filename + explorer.extension
+	play_pos = cur_play_pos
+	play_path = explorer.path
+	play_mediatype = explorer.maskindex
+	play_type = explorer.type
+	explorer.position = saved_pos
+	do_continue_play = 2
+
+on cur_play_pos < 0 || cur_play_pos >= explorer.count
+	on do_continue_play == 2
+		do_continue_play = 0
+		do_play_all = 0
+on play_type != "file" && play_type != "track" && play_type != "folder"
+	on do_continue_play == 2
+		do_continue_play = 1
+
+on do_continue_play == 2
+	do_continue_play = 0
+	screen.update = "now"
+	was_continue_play = 1
+	do_play = 1
+
+
+/////// player controls:
+on playing == 1
+	on pad.key == "pause"
+		do_pause = 1
+	on player.speed == 1
+		on do_pause == 1
+			do_pause = 0
+			show_static_balloon = "player/pause"
+			player.command = "pause"
+
+	on pad.key == "forward"
+		player.command = "forward"
+	on pad.key == "rewind"
+		player.command = "rewind"
+
+	on do_play_audio == 1
+		on pad.key == "forward"
+			show_fast_balloon = "player/fwd"
+		on pad.key == "rewind"
+			show_fast_balloon = "player/rev"
+
+	on do_play_video == 1
+		on pad.key == "audio"
+    		player.command = "audio"
+		on pad.key == "subtitle"
+			player.command = "subtitle"
+		on pad.key == "angle"
+			show_fast_balloon = "player/invalid"
+
+	on pad.key == "stop"
+		kernel.print = "STOP PLAYING"
+		do_play_all = 0
+		stop_before_play = 0
+		player.command = "stop"
+
+// display playing status balloons
+on playing == 1
+	on do_play_video == 1
+		on show_balloon != "player/invalid"
+			on player.speed == 1
+				show_fast_balloon = "player/play"
+		on player.speed == 4
+			show_static_balloon = "player/fwd"
+		on player.speed == -4
+			show_static_balloon = "player/rev"
+		on player.speed > 4
+			show_static_balloon = "player/fwdfast"
+		on player.speed < -4
+			show_static_balloon = "player/revfast"
+
+		// PAL/NTSC autodetect
+		on settings.user2 == 1
+			on player.frame_rate > 0
+				autodetect_pal_ntsc = 1
+
+		on player.subtitle != ""
+			subtitle.value = player.subtitle
+		on player.subtitle == ""
+			subtitle.value = player.subtitle
+
+		on player.subtitle_stream == 0
+			show_fast_balloon = "player/subtitleoff"
+		on player.subtitle_stream > 0
+			show_fast_balloon = "player/subtitle"
+			show_balloon_text = player.language_subtitle + " ("+ player.subtitle_stream + ")"
+
+
+	// resume play
+	on player.speed != 1 && do_show_photo == 0
+		on pad.key == "play"
+			resume_play = 1
+	on player.speed == 0 && do_show_photo == 0
+		on do_pause == 1
+			do_pause = 0
+			resume_play = 1
+	on resume_play == 1
+		cancel_search = 1
+		show_fast_balloon = "player/play"
+		player.command = "play"
+
+	on player.audio_stream > 0
+		show_fast_balloon = "player/audio"
+		show_balloon_text = "Audio "+ player.audio_stream
+
+////////////////////////
+// react on errors:
+on player.error == "invalid"
+	show_static_balloon = "player/invalid"
+on player.error == "corrupted"
+	show_fast_balloon = "player/corrupted"
+on player.error == "wait"
+	show_fast_balloon = "wait"
+on player.error == "badaudio"
+	show_fast_balloon = "mute"
+on player.error == "badvideo"
+	show_badvideo_popup = 1
+on player.error == "qpel"
+	qpel_gmc = "QPel";
+	show_qpel_gmc_popup = 1
+on player.error == "gmc"
+	qpel_gmc = "GMC";
+	show_qpel_gmc_popup = 1

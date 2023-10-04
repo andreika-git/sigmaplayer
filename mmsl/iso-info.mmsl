@@ -1,0 +1,206 @@
+//////////////////////////////
+// files info:
+
+on iso_info == 1
+	info_x = 178
+	info_y = 125
+
+	need_info = 0
+
+	delete .group == "fileinfo"
+
+	add text textsize
+	textsize.group = "fileinfo"
+	textsize.visible = 0
+
+	add text textdate
+	textdate.group = "fileinfo"
+	textdate.visible = 0
+
+	add text photoload
+	photoload.group = "fileinfo"
+	photoload.visible = 0
+	photoload.value = "Loading..."
+	photoload.halign = "center"
+	photoload.valign = "center"
+	photoload.x = 501 
+	photoload.y = 174
+
+on del_info == 1
+	need_info = 0
+	textsize.visible = 0
+	textdate.visible = 0
+	photoload.visible = 0
+	delete .group == "infotitle"
+	delete .group == "infoartist"
+	delete .group == "infodims"
+	delete .group == "infoclrs"
+	delete .group == "infolength"
+	put_dims = 0
+	put_clrs = 0
+	put_title = 0
+	put_artist = 0
+	put_length = 0
+
+on in_menu == 0
+	on cur_pos != -1
+		del_info = 1
+on in_menu == 0 && osd == 0 && explorer.type == "file"
+	on cur_pos != -1
+		info_iy = info_y + 2*23
+		put_dims = 0
+		put_clrs = 0
+		put_title = 0
+		put_artist = 0
+		put_length = 0
+		need_info = 1
+
+		// output user-friendly file size:
+		textsize.visible = 1
+		textsize.x = info_x
+		textsize.y = info_y
+		textsize.timer = 500		// 0.5 sec
+
+		filesize_value = explorer.filesize			// see osd.mmsl
+		textsize.value = "Size: " + filesize_string
+
+		// file modification date:
+		textdate.x = info_x
+		textdate.y = textsize.y + textsize.height
+		textdate.value = "Date: " + explorer.filetime
+		filedate_string = explorer.filetime
+		textdate.visible = 1
+		textdate.timer = 0
+		info_iy = info_iy + 23
+
+		show_preview = ""
+		info_path = explorer.path
+
+on in_menu == 0 && osd == 0 && explorer.type == "track"
+	on cur_pos != -1
+		// first, get some info from CD
+		info_iy = info_y + 2*23
+		need_info = 1
+		need_length = 1
+		player.source = explorer.path
+		we_asked_info_for = player.source
+		player.command = "info"
+
+		info_iy = info_y + 1*23
+		put_title = 1
+		delete .group == "infotitle"
+		add text texttitle
+		texttitle.group = "infotitle"
+		texttitle.x = info_x
+		texttitle.y = info_iy
+		info_iy = info_iy + 23
+		texttitle.value = "Track/Total: " + (explorer.filename/10) + (explorer.filename%10) + " / " + (player.num_titles/10) + (player.num_titles%10)
+
+on need_info == 1 && playing == 0 && show_popup_text == ""
+	// use a little delay to speed-up cursor move
+	on textsize.timer == 0
+		call_info = 1
+
+on explorer.maskindex == 3		// jpeg
+	on call_info == 1
+		show_preview = info_path
+		textdate.timer = 600	// start timer for preview
+on show_preview != ""
+	on del_info == 1
+		show_preview = ""
+		do_show_preview = "/img/defpreview.jpg"
+		folder.width = 0
+	on textdate.timer == 0
+		photoload.visible = 1
+		screen.update = "now"
+		folder.width = 220
+		do_show_preview = show_preview
+		photoload.visible = 0
+
+	// there was an error
+	on screen.back == ""
+		kernel.print = "Preview Error!"
+		do_show_preview = "/img/defpreview.jpg"
+		folder.width = 0
+
+on do_show_preview != ""
+	saved_back_right = screen.back_right
+	saved_back_bottom = screen.back_bottom
+		
+	screen.back_left = 460
+	screen.back_top = 105
+	screen.back_right = 669
+	screen.back_bottom = 244
+		
+	screen.back = do_show_preview
+	
+	screen.back_left = 0
+	screen.back_top = 0
+	screen.back_right = saved_back_right
+	screen.back_bottom = saved_back_bottom
+
+
+on call_info == 1
+	call_info = 0
+	player.source = info_path
+	// query player for extended info (we'll receive it when available)
+	we_asked_info_for = player.source
+	player.command = "info"
+	
+
+on need_info == 1 && osd == 0/* && playing == 0 */
+	on put_title == 0
+		on player.name != ""
+			put_title = 1
+			delete .group == "infotitle"
+			add text texttitle
+			texttitle.group = "infotitle"
+			texttitle.x = info_x
+			texttitle.y = info_iy
+			info_iy = info_iy + 23
+			texttitle.value = "Title: " + player.name
+
+	on put_artist == 0
+		on player.artist != ""
+			put_artist = 1
+			delete .group == "infoartist"
+			add text textartist
+			textartist.group = "infoartist"
+			textartist.x = info_x
+			textartist.y = info_iy
+			info_iy = info_iy + 23
+			textartist.value = "Artist: " + player.artist
+
+	on put_dims == 0
+		on player.width != 0 && player.height != 0
+			put_dims = 1
+			delete .group == "infodims"
+			add text textdims
+			textdims.group = "infodims"
+			textdims.x = info_x
+			textdims.y = info_iy
+			info_iy = info_iy + 23
+			textdims.value = "Resolution: " + player.width + " X " + player.height
+
+	on put_clrs == 0
+		on player.color_space != ""
+			put_clrs = 1
+			delete .group == "infoclrs"
+			add text textclrs
+			textclrs.group = "infoclrs"
+			textclrs.x = info_x
+			textclrs.y = info_iy
+			info_iy = info_iy + 23
+			textclrs.value = "Color Space: " + player.color_space
+
+	on put_length == 0 && need_length == 1
+		on player.length > 0
+			put_length = 1
+			need_length = 0
+			delete .group == "infolength"
+			add text textlength
+			textlength.group = "infolength"
+			textlength.x = info_x
+			textlength.y = info_iy
+			info_iy = info_iy + 23
+			textlength.value = "Length: " + (player.length/36000) + ((player.length/3600)%10) + ":" + (player.length%3600/600) + ((player.length%3600/60)%10) + ":" + ((player.length%60)/10) + ((player.length%60)%10)

@@ -1,0 +1,367 @@
+////////////////////////////
+// search:
+on player.menu == 0 && (player.speed == 0 || player.speed == 1) && player.playing == 1
+	on pad.key == "search"
+		do_search = 1
+
+on player.menu == 1
+	on pad.key == "search"
+		show_fast_balloon = "player/invalid"
+
+on search == 0
+	on cancel_search == 1
+		cancel_search = 0
+	on do_search == 1
+		cancel_search = 0
+		do_search = 0
+		old_allow_osd = allow_osd
+		allow_osd = 0
+		old_allow_zoom = allow_zoom
+		allow_zoom = 0
+		search_old_in_menu = in_menu
+		in_menu = 2
+		search = 1
+		show_balloon = ""
+		player.command = "pause"
+		add image popup
+			popup.group = "search"
+			popup.halign = "center"
+			popup.valign = "center"
+			popup.src = "img/player/popup.gif"
+			popup.x = (screen.right + screen.left) / 2
+			popup.y = (screen.bottom + screen.top) / 2 - 20
+		screen.backcolor = -1
+		add text header
+			header.group = "search"
+			header.valign = "center"
+			header.font = font2
+			header.x = popup.x - 185
+			header.y = popup.y - 83
+			header.value = search_title
+		stext_x = popup.x - 50
+		stext_y1 = popup.y - 42
+		stext_y2 = stext_y1 + 20
+		
+		stext_y3 = stext_y1
+		stext_y4 = stext_y2
+		
+		stext_yr = stext_y1 + 60
+		add rect srect
+			srect.group = "search"
+			srect.backcolor = colors.white
+			srect.linewidth = 0
+
+		screen.halign = "right"
+		draw_titles = 1
+		add text t; t.group = "search"; t.x = stext_x;	t.y = stext_y3;	t.value = "Time :"
+		add text tt; tt.group = "search"; tt.x = stext_x;	tt.y = stext_y4;	tt.value = "Total Time :"
+		
+		screen.halign = "left"
+		stext_x = stext_x + 20
+
+		rlength_width = 310
+		rlength_height = 10
+
+		add rect rlength
+			rlength.group = "search"
+			rlength.width = rlength_width + 4
+			rlength.x = popup.x - 180
+			rlength.y = stext_yr
+			rlength.height = rlength_height + 4
+			rlength.linewidth = 1
+			rlength.color = colors.white
+			rlength.backcolor = -1
+
+		add rect rtime
+			rtime.group = "search"
+			rtime.width = rlength_width
+			rtime.x = rlength.x + 2
+			rtime.y = stext_yr + 2
+			rtime.height = rlength_height
+			rtime.linewidth = 0
+			rtime.backcolor = colors.yellow
+
+		draw_titles = 2
+
+		add text time; time.group = "search"; time.color = colors.yellow; time.x = stext_x;	time.y = stext_y3;
+		old_cur_secs = player.time
+		cur_secs = player.time
+
+		add text fulltime; fulltime.group = "search"; fulltime.x = stext_x;	fulltime.y = stext_y4;	
+		fulltime.value = "" + (player.length/36000) + ((player.length/3600)%10) + ":" + (player.length%3600/600) + ((player.length%3600/60)%10) + ":" + ((player.length%60)/10) + ((player.length%60)%10)
+
+		screen.halign = "left"
+
+		sy = 2
+		sx = 0
+
+		draw_titles = 3
+
+	on set_digit >= 0
+		kernel.print = "Jump to " + (set_digit * 10) + "%%!"
+		player.command = "pause"
+		player.time = player.length * set_digit / 10
+		player.command = "play"
+		
+on drive.mediatype == "dvd"
+	on draw_titles == 1
+		draw_titles = 0
+		add text t; t.group = "search"; t.x = stext_x;	t.y = stext_y1;	t.value = "Title/Total :"
+		add text ct; ct.group = "search"; ct.x = stext_x;	ct.y = stext_y2; ct_value = "Chapter/Total :";	ct.value = ct_value;
+		stext_y3 = stext_y1 + 50
+		stext_y4 = stext_y1 + 70
+		stext_yr = stext_y1 + 110
+
+on drive.mediatype == "dvd"
+	on draw_titles == 2
+		draw_titles = 0
+		add text title; title.group = "search"; title.color = colors.yellow; title.x = stext_x;	title.y = stext_y1;	
+		real_title = player.title
+		cur_title = player.title
+		
+		add text t; t.group = "search"; t.x = stext_x + title.width; t.y = stext_y1;	t.value = " / " + (player.num_titles/10) + (player.num_titles%10)
+
+		add text chapter; chapter.group = "search"; chapter.color = colors.yellow; chapter.x = stext_x;	chapter.y = stext_y2;	
+		cur_chapter = player.chapter
+		
+		add text numch; numch.group = "search"; numch.x = stext_x + chapter.width; numch.y = stext_y2;
+		num_chapters = player.num_chapters
+
+on drive.mediatype == "dvd"
+	on draw_titles == 3
+		draw_titles = 0
+		sy = 1
+		sx = 1 - (cur_chapter > 9)
+
+on search == 1
+	on do_search == 1 || pad.key == "cancel"
+		cancel_search = 1
+	on player.playing == 1
+		on cancel_search == 1
+			player.command = "cancel"	// cancel all changes
+			player.command = "play"
+	on cancel_search == 1
+		delete .group == "search"
+		in_menu = search_old_in_menu
+		allow_osd = old_allow_osd
+		allow_zoom = old_allow_zoom
+		cancel_search = 0
+		search = 0
+
+	on pad.key == "enter"
+		delete .group == "search"
+		player.command = "play"
+		in_menu = search_old_in_menu
+		allow_osd = old_allow_osd
+		allow_zoom = old_allow_zoom
+		search = 0
+
+	// update time
+	on player.length > 0
+		on cur_secs > player.length
+			cur_secs = old_cur_secs
+	on cur_secs >= 0
+		old_cur_secs = cur_secs
+		s_h1 = (cur_secs/36000)
+		s_h2 = ((cur_secs/3600)%10)
+		s_m1 = (cur_secs%3600/600)
+		s_m2 = ((cur_secs%3600/60)%10)
+		s_s1 = ((cur_secs%60)/10)
+		s_s2 = ((cur_secs%60)%10)
+		time.value = "" + s_h1 + s_h2 + ":" + s_m1 + s_m2 + ":" + s_s1 + s_s2
+		rtime.width = cur_secs * rlength_width / player.length
+	on cur_secs != player.time
+		on cur_secs >= 0
+			player.time = cur_secs
+
+	on update_cur_secs == 1
+		cur_secs = (s_h1 * 10 + s_h2) * 3600 + (s_m1 * 10 + s_m2) * 60 + (s_s1 * 10 + s_s2)
+
+	on player.time >= 0 && player.time <= player.length
+		cur_secs = player.time
+	on player.length > 0
+		on player.time >= 0 && player.time > player.length
+			cur_secs = player.length
+
+	on cur_title >= 0
+		s_t1 = (cur_title/10)
+		s_t2 = (cur_title%10)
+		title.value = "" + s_t1 + s_t2
+
+	on cur_title != player.title
+		on cur_title >= 0
+			player.title = cur_title
+
+	on cur_title != real_title
+		fulltime.visible = 0
+		time.visible = 0
+		tt.visible = 0
+
+	on cur_title == real_title
+		fulltime.visible = 1
+		time.visible = 1
+		tt.visible = 1
+
+	on update_cur_title == 1
+		cur_title = s_t1 * 10 + s_t2
+
+	on cur_chapter >= 0
+		s_c1 = (cur_chapter/10)
+		s_c2 = (cur_chapter%10)
+		chapter.value = "" + s_c1 + s_c2
+	on cur_chapter != player.chapter
+		on cur_chapter >= 0
+			player.chapter = cur_chapter
+
+	on update_cur_chapter == 1
+		cur_chapter = s_c1 * 10 + s_c2
+
+	on player.chapter >= 0
+		cur_chapter = player.chapter
+
+	on num_chapters >= 0
+		numch.value = " / " + (num_chapters/10) + (num_chapters%10)
+
+	on player.num_chapters >= 0
+		num_chapters = player.num_chapters
+
+	on pad.key == "up"
+		move_up = 1
+	on pad.key == "down"
+		move_down = 1
+
+	// draw cursor
+	char_w = 10
+	on sy == 0
+		on sx >= 0
+			srect.x = title.x + sx * char_w
+			srect.width = char_w+1
+			srect.y = title.y+1
+			srect.height = title.height-2
+		on pad.key == "right" || pad.key == "left"
+			sx = 1 - sx
+		on move_down == 1
+			move_down = 0
+			sy = 1
+			sx = 1
+		on sx == 0
+			on set_digit >= 0
+				s_t1 = set_digit
+				set_digit = -1
+				update_cur_title = 1
+				sx = sx + 1
+		on sx == 1
+			on set_digit >= 0
+				s_t2 = set_digit
+				update_cur_title = 1
+	on sy == 1
+		on sx >= 0
+			srect.x = chapter.x + sx * char_w
+			srect.width = char_w+1
+			srect.y = chapter.y+1
+			srect.height = chapter.height-2
+		on pad.key == "right" || pad.key == "left"
+			sx = 1 - sx
+		on move_up == 1
+			move_up = 0
+			sy = 0
+			sx = 1
+		on move_down == 1
+			move_down = 1
+			sy = 2
+			sx = 0
+		on sx == 0
+			on set_digit >= 0
+				s_c1 = set_digit
+				set_digit = -1
+				update_cur_chapter = 1
+				sx = sx + 1
+		on sx == 1
+			on set_digit >= 0
+				s_c2 = set_digit
+				update_cur_chapter = 1
+	on sy == 2
+		on sx < 5
+			on pad.key == "right"
+				sx = sx + 1
+		on sx > 0
+			on pad.key == "left"
+				sx = sx - 1
+		on drive.mediatype == "dvd"		// move to chapters/titles only for DVD
+			on move_up == 1
+				move_up = 0
+				sy = 1
+				sx = 1
+		on sx == 0 || sx == 1
+			srect.x = time.x + sx * char_w
+			srect.width = char_w+1
+			srect.y = time.y+1
+			srect.height = time.height-2
+		on sx == 2 || sx == 3
+			srect.x = time.x + 7 + sx * char_w
+			srect.width = char_w+1
+			srect.y = time.y+1
+			srect.height = time.height-2
+		on sx == 4 || sx == 5
+			srect.x = time.x + 14 + sx * char_w
+			srect.width = char_w+1
+			srect.y = time.y+1
+			srect.height = time.height-2
+		on sx == 0
+			on set_digit >= 0
+				s_h1 = set_digit
+				set_digit = -1
+				update_cur_secs = 1
+				sx = sx + 1
+		on sx == 1
+			on set_digit >= 0
+				s_h2 = set_digit
+				set_digit = -1
+				update_cur_secs = 1
+				sx = sx + 1
+		on sx == 2
+			on set_digit >= 0 && set_digit <= 5
+				s_m1 = set_digit
+				set_digit = -1
+				update_cur_secs = 1
+				sx = sx + 1
+		on sx == 3
+			on set_digit >= 0
+				s_m2 = set_digit
+				set_digit = -1
+				update_cur_secs = 1
+				sx = sx + 1
+		on sx == 4
+			on set_digit >= 0 && set_digit <= 5
+				s_s1 = set_digit
+				set_digit = -1
+				update_cur_secs = 1
+				sx = sx + 1
+		on sx == 5
+			on set_digit >= 0
+				s_s2 = set_digit
+				set_digit = -1
+				update_cur_secs = 1
+
+on player.playing == 1
+	on pad.key == "zero"
+		set_digit = 0
+	on pad.key == "one"
+		set_digit = 1
+	on pad.key == "two"
+		set_digit = 2
+	on pad.key == "three"
+		set_digit = 3
+	on pad.key == "four"
+		set_digit = 4
+	on pad.key == "five"
+		set_digit = 5
+	on pad.key == "six"
+		set_digit = 6
+	on pad.key == "seven"
+		set_digit = 7
+	on pad.key == "eight"
+		set_digit = 8
+	on pad.key == "nine"
+		set_digit = 9
+

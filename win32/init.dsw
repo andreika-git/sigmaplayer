@@ -1,0 +1,167 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "dvd"=.\dvd.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name dvdnav
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "dvd_mod"=.\dvd_mod.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name dvdnav
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "dvdcss"=.\dvdcss.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "dvdnav"=.\dvdnav.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name dvdcss
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "gui"=.\gui.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "init"=.\init.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libsp
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name gui
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libjpeg
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libpng
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name mw
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libid3tag
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmad
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libid3tag"=.\libid3tag.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libjpeg"=.\libjpeg.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmad"=.\libmad.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libsp"=.\libsp.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

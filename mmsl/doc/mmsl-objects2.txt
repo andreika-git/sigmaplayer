@@ -1,0 +1,161 @@
+
+- image
+  * Puts a new image (animated picture) object on the screen.
+  - type [r/o]
+    * Object's type (set automatically when created).
+    = "image"
+  - group [r/w]
+    * Object's group name. Can be used for grouped objects deletion.
+  - src [r/w]
+    * Source image file in .GIF format (normal or animated).
+  - x [r/w]
+    * X coordinate, in pixels (see 'halign')
+  - y [r/w]
+    * Y coordinate, in pixels (see 'valign')
+  - visible [r/w]
+    * If the object is visible on the screen.
+    = 0
+      * Default for empty objects ('new' without arguments)
+    = 1
+      * Default for set-up objects ('new' with arguments)
+  - width [r/w]
+    * Image width, in pixels
+  - height [r/w]
+    * Image height, in pixels
+  - hflip [r/w]
+    * Horizontal image flip. A little more slow than normal image.
+    = 0 (default)
+    = 1
+  - vflip [r/w]
+    * Vertical image flip
+    = 0 (default)
+    = 1
+  - halign [r/w]
+    * Horizontal image align
+    = screen.halign (default)
+  - valign [r/w]
+    * Vertical image align
+    = screen.valign (default)
+  - timer [r/w]
+    * Sets built-in count-back timer, in msecs. Should be used in 'on' conditionals.
+    = 0 (default)
+
+=======================================================================================
+
+- text
+  * Puts a new text object on the screen.
+  - type [r/o]
+    * Object's type (set automatically when created).
+    = "text"
+  - group [r/w]
+    * Object's group name. Can be used for grouped objects deletion.
+  - x [r/w]
+    * X coordinate, in pixels (see 'halign')
+  - y [r/w]
+    * Y coordinate, in pixels (see 'valign')
+  - visible [r/w]
+    * If the object is visible on the screen.
+    * Non-visible text objects can be used for string manipulation.
+    = 0
+      * Default for empty objects ('new' without arguments)
+    = 1
+      * Default for set-up objects ('new' with arguments)
+  - width [r/w]
+    * Text width, in pixels. /*Set it to format multi-line text.*/
+    = 0
+      * Set automatically to text extents
+  - height [r/w]
+    * Text height, in pixels
+  - halign [r/w]
+    * Horizontal text align.
+    = screen.halign (default)
+  - valign [r/w]
+    * Vertical text align.
+    = screen.valign (default)
+  - color [r/w]
+    * Text color.
+    = screen.color (default)
+  - backcolor [r/w]
+    * Text background color.
+    = screen.backcolor (default)
+  - value [r/w]
+    * Text string.
+  - count [r/w]
+    * Number of characters in the text string.
+    * One can change this value to cut the string from the right.
+    *  Text width and height changes if string is cut.
+  - delete [w/o]
+    * Delete first N characters from the string. Text width and height changes.
+  - font [r/w]
+    * Font name used for this text object
+  - textalign [r/w]
+    * Horizontal text align (rows are affected).
+    = "left" (default)
+    = "center"
+    = "right"
+  - style [r/w]
+    * Text style (see below). Setting text style changes text width and height.
+    = "" (default)
+      * No style, normal text.
+    = "underline"
+      * Underlined text. Underline displayed using text color.
+    = "outline"
+      * Contrast outline, used for subtitles.
+      * For outlined text width and height is increased by 1 pixel.
+      * Background color is used for outline, and transparent is for text background.
+  - timer [r/w]
+    * Sets built-in count-back timer, in msecs. Should be used in 'on' conditionals.
+    = 0 (default)
+
+=======================================================================================
+
+- rect
+  * Puts a new rectangle object on the screen.
+  - type [r/o]
+    * Object's type (set automatically when created).
+    = "rect"
+  - group [r/w]
+    * Object's group name. Can be used for grouped objects deletion.
+  - x [r/w]
+    * X Coordinate of rectangle offset, in pixels.
+    * See 'halign'.
+  - y [r/w]
+    * Y Coordinate of rectangle offset, in pixels.
+    * See 'valign'.
+  - visible [r/w]
+    * If the object is visible on the screen.
+    = 0
+      * Default for empty objects ('new' without arguments)
+    = 1
+      * Default for set-up objects ('new' with arguments)
+  - width [r/w]
+    * Rectangle width, in pixels.
+  - height [r/w]
+    * Rectangle height, in pixels.
+  - linewidth [r/w]
+    * Border line width, in pixels.
+    = 1 (default)
+    = 0
+      * For no border.
+  - color [r/w]
+    * Is a rectangle border color, palette index
+    = screen.color (default)
+  - backcolor [r/w]
+    * Is a background color, palette index
+    * Set it to negative value to draw transparent rectangle
+    = screen.backcolor (default)
+  - halign [r/w]
+    * Is a rectangle horizontal align, relative to the given (x,y) center
+    = screen.halign (default)
+  - valign [r/w]
+    * Is a rectangle vertical align, relative to the given (x,y) center
+    = screen.valign (default)
+  - round [r/w]
+    * Draw a rounded rectangle.
+    * 'round' is a round arc radius, in pixels.
+    = 0 (default)
+  - timer [r/w]
+    * Sets built-in count-back timer, in msecs. Should be used in 'on' conditionals.
+    = 0 (default)
+
+=======================================================================================

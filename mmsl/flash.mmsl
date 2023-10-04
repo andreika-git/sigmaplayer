@@ -1,0 +1,59 @@
+on flash_firmware != ""
+	pad.display = "FLASH"
+	screen.update = "now"
+
+	ft0 = "Upgrading from " + flash_firmware
+
+	add rect fbk
+		fbk.width = 500
+		fbk.height = 150
+		fbk.x = (screen.right + screen.left) / 2 - fbk.width / 2
+		fbk.y = (screen.top + screen.bottom) / 2
+		fbk.valign = "center"
+		fbk.round = 5
+		fbk.color = colors.lightblueback
+		fbk.backcolor = colors.lightblueback
+
+	add text fte
+		fte.x = fbk.x + 10
+		fte.y = fbk.y - 40
+		fte.valign = "center"
+		fte.font = font1
+		fte.color = colors.white
+		fte.backcolor = fbk.backcolor
+		fte.value = ft0 + "\nPlease wait..."
+
+	add rect r
+		r.x = fbk.x + 10
+		r.y = fbk.y
+		r.valign = "center"
+		r.width = 0
+		r.height = 22
+		r.color = colors.white
+		r.backcolor = colors.white
+
+	flash.file = flash_firmware
+	ft0 = ft0 + " @ 0x" + (flash.address/65536) + ((flash.address%65536)/4096) + "000..."
+
+	on flash.progress == -1
+		fte.value = ft0 + "\nERROR!"
+		pad.display = "Error"
+		drive.tray = "open"
+		screen.update = "now"
+	on flash.progress == -2
+		fte.value = ft0 + "\nVerification ERROR! Try again!"
+		pad.display = "Error"
+		drive.tray = "open"
+		screen.update = "now"
+
+	on flash.progress >= 0
+		r.width = flash.progress * 480 / 100
+		fte.value = ft0 + "\n" + flash.progress + " %"
+		pad.display = flash.progress
+
+	on flash.progress == 100
+		fte.value = ft0 + "\nDONE! PLEASE TURN OFF YOUR PLAYER NOW!"
+		pad.display = "donE"
+		drive.tray = "open"
+		screen.update = "now"
+		kernel.power = 2

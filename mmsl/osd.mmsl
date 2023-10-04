@@ -1,0 +1,379 @@
+//////////////////////////
+/// OSD playing info:
+
+osd = 0
+
+on allow_osd == 1
+	on pad.key == "osd"
+		do_osd = 1
+
+on osd == 0
+	delete .group == "osd"
+
+	on player.playing == 1 || setup == 1 || do_show_photo == 1
+		on do_osd == 1
+			real_do_osd = 1
+
+	on real_do_osd == 1
+		kernel.print = "SHOW OSD INFO!"
+		do_osd = 0
+		real_do_osd = 0
+		cancel_osd = 0
+		osd_old_in_menu = in_menu
+		in_menu = 2
+		osd = 1
+		delete .group == "osd"
+		add rect osdback
+		osdback.group = "osd"
+		osdback.halign = "center"
+		osdback.valign = "center"
+		osdback.x = (screen.right + screen.left) / 2
+		osdback.y = (screen.bottom + screen.top) / 2
+		osdback.width = 500
+		osdback.height = 320
+		osdback.round = 10
+		osdback.color = -1
+		osdback.backcolor = colors.blueback
+		
+		add rect osdframe
+		osdframe.group = "osd"
+		osdframe.halign = "center"
+		osdframe.valign = "center"
+		osdframe.x = osdback.x
+		osdframe.y = osdback.y
+		osdframe.width = osdback.width - 20
+		osdframe.height = osdback.height - 20
+		osdframe.round = 8
+		osdframe.color = colors.yellow
+		osdframe.backcolor = -1
+
+		osd_x = osdback.x - osdback.width/2 + 30
+		osd_y = osdback.y - osdback.height/2 + 20
+
+		add text osdhdr
+		osdhdr.group = "osd"
+		osdhdr.halign = "center"
+		osdhdr.x = osdback.x
+		osdhdr.y = osd_y
+		osdhdr.backcolor = osdback.backcolor
+		osdhdr.style = "underline"
+		osd_draw_header = 1
+
+		osd_ix = osd_x
+		osd_offx = 130
+		osd_h = 24
+		osd_iy = osd_y + osd_h * 2
+
+		osd_draw_main = 1
+
+on drive.mediatype == "dvd" && player.playing == 1
+	on osd_draw_header == 1
+		osdhdr.value = "DVD Information"
+	on osd_draw_main == 1
+		titletxt = "Title/Total"
+		print_title = 1
+		print_chapter = 1
+		print_time = 1
+		print_length = 1
+		print_audio = 1
+		print_video = 1
+		print_resolution = 1
+		print_fps = 1
+
+on drive.mediatype == "iso" || drive.mediatype == "mixed"
+	on osd_draw_header == 1
+		osdhdr.value = "File Information"
+	on do_show_photo == 1
+		on osd_draw_main == 1
+			print_filename = 1
+			print_filesize = 1
+			print_filedate = 1
+			print_resolution = 1
+			print_clrs = 1
+	on do_play_audio == 1
+		on osd_draw_main == 1
+			print_filename = 1
+			print_filesize = 1
+			print_time = 1
+			print_length = 1
+			print_audio = 1
+			print_name = 1
+			print_artist = 1
+
+	on do_play_video == 1
+		on osd_draw_main == 1
+			print_filename = 1
+			print_filesize = 1
+			print_time = 1
+			print_length = 1
+			print_audio = 1
+			print_video = 1
+			print_resolution = 1
+			print_fps = 1
+
+on play_type == "track"
+	on osd_draw_header == 1
+		osdhdr.value = "Audio CD Information"
+	on osd_draw_main == 1
+		titletxt = "Title/Total"
+		print_title = 1
+		print_time = 1
+		print_length = 1
+
+on osd == 1
+	on do_osd == 1
+		do_osd = 0
+		cancel_osd = 1
+
+	on pad.key == "cancel"
+		do_osd = 0
+		cancel_osd = 1
+
+	on cancel_osd == 1
+		in_menu = osd_old_in_menu
+		osd = 0
+
+	on print_osd != ""
+		add text osdtxt
+		osdtxt.group = "osd"
+		osdtxt.x = osd_ix
+		osdtxt.y = osd_iy
+		osdtxt.backcolor = osdback.backcolor
+		osdtxt.value = print_osd
+
+	//////////////////////////
+	// file name
+	on play_path != ""
+		on print_filename == 1
+			print_osd = "File Name"
+			osd_ix = osd_x + osd_offx
+			print_osd = ":"
+			osd_ix = osd_x
+			osd_iy = osd_iy + osd_h
+			add text osdfname
+				osdfname.group = "osd"
+				osdfname.x = osd_ix + 10
+				osdfname.y = osd_iy
+				osdfname.color = colors.yellow
+				osdfname.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h + 5
+
+			on play_path != "" || print_filename == 1
+				osdfname.value = play_path
+				osdfname.delete = 6
+				osdfname.width = 420
+
+	//////////////////////////
+	// file size
+	on filesize_string != ""
+		on print_filesize == 1
+			print_osd = "File Size"
+			add text osdfsize
+				osdfsize.group = "osd"
+				osdfsize.x = osd_x + osd_offx
+				osdfsize.y = osd_iy
+				osdfsize.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on filesize_string != "" || print_filesize == 1
+				osdfsize.value = ": " + filesize_string
+
+	////////////////////////////////
+	// file date
+	on filedate_string != ""
+		on print_filedate == 1
+			print_osd = "File Date"
+			add text osdfdate
+				osdfdate.group = "osd"
+				osdfdate.x = osd_x + osd_offx
+				osdfdate.y = osd_iy
+				osdfdate.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on filedate_string != "" || print_filedate == 1
+				osdfdate.value = ": " + filedate_string
+
+	//////////////////////////
+	// file time
+	on player.time >= 0
+		on print_time == 1
+			print_osd = "Play Time"
+			add text osdftime
+				osdftime.group = "osd"
+				osdftime.x = osd_x + osd_offx
+				osdftime.y = osd_iy
+				osdftime.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.time > 0 || print_time == 1
+				osdftime.value = ": " + (player.time/36000) + ((player.time/3600)%10) + ":" + (player.time%3600/600) + ((player.time%3600/60)%10) + ":" + ((player.time%60)/10) + ((player.time%60)%10)
+
+	//////////////////////////
+	// file length
+	on player.length > 0
+		on print_length == 1
+			print_osd = "Length"
+			add text osdflength
+				osdflength.group = "osd"
+				osdflength.x = osd_x + osd_offx
+				osdflength.y = osd_iy
+				osdflength.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.length > 0 || print_length == 1
+				osdflength.value = ": " + (player.length/36000) + ((player.length/3600)%10) + ":" + (player.length%3600/600) + ((player.length%3600/60)%10) + ":" + ((player.length%60)/10) + ((player.length%60)%10)
+
+	//////////////////////////
+	// audio info
+	on player.audio_info != ""
+		on print_audio == 1
+			print_osd = "Audio Info"
+			add text osdaudio
+				osdaudio.group = "osd"
+				osdaudio.x = osd_x + osd_offx
+				osdaudio.y = osd_iy
+				osdaudio.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.audio_info != "" || print_audio == 1
+				osdaudio.value = ": " + player.audio_info
+
+	//////////////////////////
+	// video info
+	on player.video_info != ""
+		on print_video == 1
+			print_osd = "Video Info"
+			add text osdvideo
+				osdvideo.group = "osd"
+				osdvideo.x = osd_x + osd_offx
+				osdvideo.y = osd_iy
+				osdvideo.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.video_info != "" || print_video == 1
+				osdvideo.value = ": " + player.video_info
+
+	//////////////////////////
+	// name
+	on player.name != ""
+		on print_name == 1
+			print_osd = "Title"
+			add text osdname
+				osdname.group = "osd"
+				osdname.x = osd_x + osd_offx
+				osdname.y = osd_iy
+				osdname.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.name != "" || print_name == 1
+				osdname.value = ": " + player.name
+				osdname.width = 315
+
+	//////////////////////////
+	// artist
+	on player.artist != ""
+		on print_artist == 1
+			print_osd = "Artist"
+			add text osdartist
+				osdartist.group = "osd"
+				osdartist.x = osd_x + osd_offx
+				osdartist.y = osd_iy
+				osdartist.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.artist != "" || print_artist == 1
+				osdartist.value = ": " + player.artist
+				osdartist.width = 315
+
+	//////////////////////////
+	// DVD title
+	on player.title > 0 && player.num_titles > 0
+		on print_title == 1
+			print_osd = titletxt
+			add text osdtitle
+				osdtitle.group = "osd"
+				osdtitle.x = osd_x + osd_offx
+				osdtitle.y = osd_iy
+				osdtitle.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.title > 0 && player.num_titles > 0 || print_title == 1
+				osdtitle.value = ": " + (player.title/10) + (player.title%10) + " / " + (player.num_titles/10) + (player.num_titles%10)
+
+	//////////////////////////
+	// DVD chapter
+	on player.chapter > 0 && player.num_chapters > 0
+		on print_chapter == 1
+			print_osd = "Chapter/Total"
+			add text osdchapter
+				osdchapter.group = "osd"
+				osdchapter.x = osd_x + osd_offx
+				osdchapter.y = osd_iy
+				osdchapter.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.chapter > 0 && player.num_chapters > 0 || print_chapter == 1
+				osdchapter.value = ": " + (player.chapter/10) + (player.chapter%10) + " / " + (player.num_chapters/10) + (player.num_chapters%10)
+
+	//////////////////////////
+	// resolution
+	on player.width > 0 && player.height > 0
+		on print_resolution == 1
+			print_osd = "Resolution"
+			add text osdresolution
+				osdresolution.group = "osd"
+				osdresolution.x = osd_x + osd_offx
+				osdresolution.y = osd_iy
+				osdresolution.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.width > 0 && player.height > 0 || print_resolution == 1
+				osdresolution.value = ": " + player.width + " X " + player.height
+
+	// frame rate
+	on player.frame_rate > 0
+		on print_fps == 1
+			print_osd = "Frame Rate"
+			add text osdfps
+				osdfps.group = "osd"
+				osdfps.x = osd_x + osd_offx
+				osdfps.y = osd_iy
+				osdfps.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.frame_rate > 0 || print_fps == 1
+				osdfps.value = ": " + (player.frame_rate / 1000) + "," + (player.frame_rate % 1000)/100 + (player.frame_rate % 100)/10 + player.frame_rate % 10
+
+	//////////////////////////
+	// color space
+	on player.color_space != ""
+		on print_clrs == 1
+			print_osd = "Color Space"
+			add text osdclrs
+				osdclrs.group = "osd"
+				osdclrs.x = osd_x + osd_offx
+				osdclrs.y = osd_iy
+				osdclrs.backcolor = osdback.backcolor
+			osd_iy = osd_iy + osd_h
+
+			on player.color_space != "" || print_clrs == 1
+				osdclrs.value = ": " + player.color_space
+
+////////////////////////////////////////////
+// File size formatting:
+
+on filesize_value < 1000 && filesize_value >= 0
+	filesize_string = filesize_value + " bytes"
+on filesize_value < 1000000 && filesize_value >= 1000
+	filesize_string = (filesize_value/1000) + ","+ ((filesize_value%1000)/100)+((filesize_value%100)/10)+(filesize_value%10)+" bytes"
+on filesize_value < 1024000 && filesize_value >= 1000000
+	filesize_string = (filesize_value/1024) + " Kbytes"
+on filesize_value < 1024000000 && filesize_value >= 1024000
+	filesize_string = (filesize_value/1024000) + ","+ (((filesize_value/1024)%1000)/100)+(((filesize_value/1024)%100)/10)+((filesize_value/1024)%10)+" Kbytes"
+on filesize_value < 1048576000 && filesize_value >= 1024000000
+	filesize_string = (filesize_value/1048576) + " Mbytes"
+on filesize_value >= 1048576000
+	filesize_string = (filesize_value/1048576000) + ","+ (((filesize_value/1048576)%1000)/100)+(((filesize_value/1048576)%100)/10)+((filesize_value/1048576)%10)+" Mbytes"
+// if filesize if negative, it means the huge file, the size is in kilos.
+on filesize_value < 0
+	filesize_string = (-filesize_value/1048576) + "," + (((-filesize_value/1024)%1000)/100) + " Gbytes"

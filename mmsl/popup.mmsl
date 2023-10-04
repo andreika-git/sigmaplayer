@@ -1,0 +1,43 @@
+auto_close_popup = 1
+cancel_popup = 0
+
+on show_popup_text != ""
+	add image popup
+		popup.group = "popup"
+		popup.halign = "center"
+		popup.valign = "center"
+		popup.src = "img/player/popup.gif"
+		popup.x = (screen.right + screen.left) / 2
+		popup.y = (screen.bottom + screen.top) / 2 - 20
+	screen.backcolor = -1
+	add text header
+		header.group = "popup"
+		header.font = font2
+		header.valign = "center"
+		header.x = popup.x - 185
+		header.y = popup.y - 83
+		header.value = "Message"
+	stext_x = popup.x - 170
+	stext_y1 = popup.y - 42
+	add text popuptext
+		popuptext.group = "popup"
+		popuptext.x = stext_x
+		popuptext.y = stext_y1
+		popuptext.font = msgfont
+		popuptext.value = show_popup_text
+		popuptext.width = 335
+		popuptext.height = 120
+		popuptext.timer = popup_timer
+
+	on pad.key == "cancel"
+		cancel_popup = 1
+
+on auto_close_popup == 1
+	on popuptext.timer == 0
+		cancel_popup = 1
+
+on cancel_popup == 1
+	delete .group == "popup"
+	show_popup_text = ""
+	auto_close_popup = 1
+

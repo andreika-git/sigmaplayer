@@ -1,0 +1,332 @@
+================================================
+- MMSL Identifiers
+  * Characters allowed: alpha-numerical, "." and "_".
+  * Identifiers are variable or object variable names (case-insensitive).
+
+================================================
+- MMSL Constants
+  * Constants are integer (signed 32-bit) or string (in single or double quotes).
+
+================================================
+- MMSL Variables
+  * Variables in MMSL can contain string or integer values.
+  - type
+    - string
+    - numeric
+  - value
+  * conversion to strings and integers
+  * contains trigger list
+
+================================================
+- MMSL Statements
+  * MMSL file consists of statements separated by newline or semicolon (;).
+  * The types of statements are:
+  * - ::INCLUDE Command:: for MMSL-file inclusion;
+  * - Arithmetic expressions;
+  *   See ::MMSL Operators::.
+  * - Event declaration:
+  *   See ::MMSL Events::.
+  * - Special operators for object addition and deletion:
+  *   = ::ADD Operator::
+  *   = ::DELETE Operator::
+
+================================================
+- MMSL Type conversion
+  * In MMSL, the type conversion (type juggling) if defined by folowing rules:
+  * 1. Operands:
+  *   - variable of string type 
+  *   - variable of integer type
+  *   - string constant ("text")
+  *   - integer constant (123456)
+  * 2. Result:
+  *   - integer variable
+  *   - string variable
+  *   - comparison result
+  * 3. Operands conversion rules (for all binary operators):
+  *   - for all arithmetic operators (-,*,/,%) except sum (+), both operands are converted to integers;
+  *   - For '+' and '==', 
+  *     - if one of the operands is integer constant, the other is converted to integer;
+  *       Examples:   
+  *     	var + 4     => int(val)+4
+  *     	"123" + 4   => 127
+  *     - otherwise, if one of the operands is string constant, the other is converted to string for concatenation;
+  *       Examples:
+  *     	var = "a"
+  *     	var + "b"   => "ab"
+  *     - otherwise, if one of the operands is integer variable, the other is converted to integer;
+  *       Examples:
+  *     	var1 = "2"
+  *     	var2 = 3
+  *     	var1 + var2 => 5
+  *     - otherwise, both operands are considered as strings, and string concatenation used.
+  * 4. String-to-integer conversion:
+  *   - "10 Monkeys" = 10
+  *   - "Opera 5" = 0
+  *   - "  1" = 1
+  *   - "-55.3" = -55
+  *   - "+12 15" = 12
+  *   - "no digits" = 0
+  * 5. For other comparison operators (except ==), operands are considered integers
+   
+================================================
+- MMSL Operators
+  * Arithmetic and Conditional expression operators:
+  * ::= Operator::
+  * ::== Operator::
+  * ::&& Operator::
+  * ::|| Operator::
+  * ::!= Operator::
+  * ::> Operator::
+  * ::< Operator::
+  * ::>= Operator::
+  * ::<= Operator::
+  * ::+ Operator::
+  * ::- Operator::
+  * ::* Operator::
+  * ::/ Operator::
+  * ::% Operator::
+  * 
+  * Also special types of operators used for events and object addition and deletion statements:
+  * ::ON Operator::
+  * ::ADD Operator::
+  * ::DELETE Operator::
+
+================================================
+- = Operator
+  * Syntax:
+  * 	[variable] = [variable or constant]
+  * Description:
+  * 	Simple assignment operator.
+  * 	Also the same as '==' in conditions.
+  * Example:
+  * 	a = b
+  * 	kernel.print = "Hello"
+================================================
+- == Operator
+  * Syntax:
+  * 	[variable or constant] == [variable or constant]
+  * Description:
+  * 	Equality comparison operator.
+  * 	Used in conditional expressions.
+  * 	See: ::Type conversion::.
+  * Example:
+  * 	a == 5
+  * 	mytext.value == "Hello"
+================================================
+- && Operator
+  * Syntax:
+  * 	[expression] && [expression]
+  * Description:
+  * 	Logical-AND operator.
+  * 	Used in conditional expressions.
+  * Example:
+  * 	(a == 5) && (b != 3)
+================================================
+- || Operator
+  * Syntax:
+  * 	[expression] || [expression]
+  * Description:
+  * 	Logical-OR operator.
+  * 	Used in conditional expressions.
+  * Example:
+  * 	(a > 5) || (a < -5)
+================================================
+- != Operator
+  * Syntax:
+  * 	[variable or constant] != [variable or constant]
+  * Description:
+  * 	Non-Equality comparison operator.
+  * 	Used in conditional expressions.
+  * 	See: ::Type conversion::.
+  * Example:
+  * 	a != 5
+  * 	mytext.value != "Hello"
+================================================
+- > Operator
+  * Syntax:
+  * 	[integer variable or constant] > [integer variable or constant]
+  * Description:
+  * 	Relational 'greater than' operator.
+  * 	Used in conditional expressions.
+  * Example:
+  * 	a > 5
+  * 	var1 > var2
+================================================
+- < Operator
+  * Syntax:
+  * 	[integer variable or constant] < [integer variable or constant]
+  * Description:
+  * 	Relational 'less than' operator.
+  * 	Used in conditional expressions.
+  * Example:
+  * 	a < 5
+  * 	var1 < var2
+================================================
+- >= Operator
+  * Syntax:
+  * 	[integer variable or constant] >= [integer variable or constant]
+  * Description:
+  * 	Relational 'greater than or equal' operator.
+  * 	Used in conditional expressions.
+  * Example:
+  * 	a >= 5
+  * 	var1 >= var2
+================================================
+- <= Operator
+  * Syntax:
+  * 	[integer variable or constant] <= [integer variable or constant]
+  * Description:
+  * 	Relational 'less than or equal' operator.
+  * 	Used in conditional expressions.
+  * Example:
+  * 	a <= 5
+  * 	var1 <= var2
+================================================
+- + Operator
+  * Syntax:
+  * 	[variable or constant] + [variable or constant]
+  * Description:
+  * 	Addition/Concatenation operator.
+  * 	Used in arithmetic and conditional expressions.
+  * 	See: ::Type conversion::.
+  * Example:
+  * 	a + 5
+  * 	mytext.value + "Hello"
+================================================
+- - Operator
+  * Syntax:
+  * 	[integer variable or constant] - [integer variable or constant]
+  * Description:
+  * 	Subtraction operator.
+  * 	The subtraction operator (-) subtracts the second operand from the first.
+  * 	Both operands are considered integers.
+  * 	Used in arithmetic and conditional expressions.
+  * Example:
+  * 	a - 5
+  * 	var1 - var2
+================================================
+- * Operator
+  * Syntax:
+  * 	[integer variable or constant] * [integer variable or constant]
+  * Description:
+  * 	Multiplication operator.
+  * 	The multiplication operator (*) causes its two operands to be multiplied.
+  * 	Both operands are considered integers.
+  * 	Used in arithmetic and conditional expressions.
+  * Example:
+  * 	a * 5
+  * 	var1 * var2
+================================================
+- / Operator
+  * Syntax:
+  * 	[integer variable or constant] / [non-zero integer variable or constant]
+  * Description:
+  * 	Division operator.
+  * 	The division operator ( / ) causes the first operand to be divided by the second.
+  * 	Both operands are considered integers.
+  * 	If second operand is zero, the result is zero (and run-time warning is issued).
+  * 	Used in arithmetic and conditional expressions.
+  * Example:
+  * 	a / 5
+  * 	var1 / var2
+================================================
+- % Operator
+  * Syntax:
+  * 	[integer variable or constant] % [non-zero integer variable or constant]
+  * Description:
+  * 	Modulus operator.
+  * 	The result of the modulus operator (%) is the remainder when the first operand is divided by the second. 
+  * 	Both operands are considered integers.
+  * 	If second operand is zero, the result is zero (and run-time warning is issued).
+  * 	Used in arithmetic and conditional expressions.
+  * Example:
+  * 	a % 5
+  * 	var1 % var2
+================================================
+- ON Operator
+  * Syntax:
+  * 	on [condition]
+  * 	    [statements...]
+  * 	    ...
+  * Description:
+  * 	Conditional Event operator.
+  * 	Triggers event when one of condition variables is set (to any value) inside MMSL script or by running program.
+  * 	When event is triggered, its statements are called - but only if condition of this event and its parent events' conditions are true.
+  * 	Object variables are not set implicitly when an object is created (and thus they won't trigger an event).
+  * 	Normally, the depending events are triggered immediately after conditional variable is set.
+  * 	Call recursion is not allowed directly. When one of triggered event's statements activates the same event, this next call is deferred untill the current event call runs to the end.
+  * Example:
+  * 	i = 1
+  * 	on (i <= 5)
+  * 	    add text mytxt;	mytxt.x = 10; mytxt.y = i * 20; mytxt.value = "String "+i
+  * 	    i = i + 1
+================================================
+- ADD Operator
+  * Syntax:
+  * 	add [object_type] [object_name]
+  * Description:
+  *     Add Object operator.
+  * 	Creates a new object of given type and adds it to the pool.
+  * 	This operator is also some sort of a variable declaration. Thus every object name should be used only once.
+  * 	The statement itself can be called many times (when event is repeated), assigning a new object to the same variable each time. Old objects become nameless and cannot be accessed by variables anymore. However, the deletion operator works with all created objects.
+  * 	Built-in object types:
+  * 	- text
+  * 	  * Creates a text object
+  * 	- image
+  * 	  * Creates an image object
+  * 	- rect
+  * 	  * Creates a rectangle object
+  * Example:
+  * 	add text hello
+  * 	hello.x = 100
+  * 	hello.y = 200
+  * 	hello.value = "Hello, world!"
+  * Example:
+  * 	add rect myrect
+  * 	myrect.x = 5; myrect.y = 7; myrect.width = 50; myrect.height = 10;
+================================================
+- DELETE Operator
+  * Syntax:
+  * 	delete [condition]
+  * Description:
+  * 	Delete Objects operator.
+  * 	Object's variables must be used in comparison conditions (including object's name, type etc).
+  * 	Object variables are used as ".variablename", i.e. without object name or prefix.
+  * 	Warning! The 'delete' command needs to run through the object list, so it takes some time.
+  * 	Warning! On deletion, the object's variables are not triggered. There's no direct way to 'capture' the object deletion in events.
+  * 	Warning! If multiple objects match the condition, the deletion order is undetermined.
+  * Example:
+  * 	delete .group=="myrectangle"
+  * 	* An object of any type named 'myrectangle' will be deleted.
+  * Example:
+  * 	delete (.type=="rect")
+  * 	* All rectangles created will be deleted.
+  * Example:
+  * 	add text t1
+  * 	t1.group = "g"
+  * 	add text t2
+  * 	t2.group = "g"
+  * 	// ...
+  * 	delete (.group == "g")
+  * 	* One can use groups for simple deletion of all objects of the same kind 
+  * Example:
+  * 	delrect.x1 = 10; delrect.y1 = 10; delrect.x2 = 100; delrect.y2 = 100; 
+  * 	delete (.x <= delrect.x2 && .y <= delrect.y2 && \
+  * 			.x+.width >= delrect.x1 && .y+.height >= delrect.y1)
+  * 	* Deletes all objects intersecting 'delrect' rectangle
+  * Example:
+  * 	delete 1
+  * 	* Deletes all created objects!
+  * 	* Be careful using conditionals without object variables: such statement may delete all objects if it's true.
+================================================
+- INCLUDE Command
+  * Syntax:
+  * 	include [string constant MMSL filename]
+  * Description:
+  * 	Inserts the code from another MMSL file.
+  * 	Include command is pre-processed, so only string constant can be specified as file name, no variables allowed.
+  * Examples:
+  * 	include "file.mmsl"
+
+================================================
+ 

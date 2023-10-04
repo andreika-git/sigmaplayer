@@ -1,0 +1,159 @@
+*** CONDITIONAL EXPRESSIONS ***
+
+How to execute a conditional expression only once, in the right place of code?
+  
+// 1. First, the "silly" method:
+i = a;
+// here we want to check the new value of i:
+on i == 4
+	kernel.print = "number four!";
+// this will trigger printing "number four" once again if b=4!
+i = b;
+
+// 2. Now, if we want to check only once (right after the 'i' set to 'a') then:
+i = a;
+// we'll check some unique variable with the same value instead of i:
+checking_i = i;
+on checking_i == 4
+	kernel.print = "number four!";
+// now the block above will not be triggered anymore until checking_i is changed!
+i = b;
+  
+
+*** LOOPS ***
+
+Simple loop - call some code N times:
+
+// 1. Set loop counter and number of repeats:
+counter=0; N=10
+
+// 2. The loop is a normal 'on' block:
+on counter<N
+    // 3. loop body:
+    // put some code here - it will be called 'N' times!
+
+    // 4. increase the loop counter
+    counter=counter+1
+
+
+Loop with break and continue:
+
+// 1. Set loop counter and number of repeats:
+counter=0; N=10
+
+// 2. The loop is a normal 'on' block:
+on counter < N
+
+	// ... some code ...
+
+    // 3. trigger loop continue by other event:
+    on needs_continue==1
+    	mycontinue = 1
+
+    // 4. don't forget to set mycontinue at the end of loop body!
+    mycontinue = 1
+
+    // 5. increase the loop counter only if 'continue' is set
+    mycontinue=1
+    on mycontinue==1
+    	counter=counter+1
+
+
+Two separate loops called one after another:
+
+// 1. Call the first loop:
+counter1=0; N1=10
+// 2. Call the second loop: 
+counter2=0; N2=20
+
+// 3. The first loop's declaration
+on counter1<N1
+    // ...1st loop's body...
+    counter1=counter1+1
+
+// 4. The second loop's declaration
+on counter2<N2
+    // ...2nd loop's body...
+    counter2=counter2+1
+
+
+Two nested loops:
+
+// 1. Call the first loop:
+counter1=0; N1=10
+
+// 2. The first loop's declaration
+on counter1<N1
+    // 3. Call the second loop:
+	counter2=0; N2=20
+
+	// 4. The second loop's declaration
+	on counter2<N2
+    	// ...2nd loop's body...
+	    counter2=counter2+1
+
+    on counter2==N2
+    	counter1=counter1+1
+
+*** STRINGS ***
+
+// Create string object and set its value:
+mystring = new string (value="some text")
+
+// ALSO RIGHT!
+mystring.value="another text"
+
+// WRONG! String object is destroyed, and 'mystring' will be an ordinary text variable!
+mystring="another text"
+
+
+Get i-th character of the string:
+
+/* The character in MMSL is also a string. So:
+     1. Specify which character we need: */
+i=5
+
+// 2. Create our string. 
+mystring = new string (value="our test string")
+
+// 3. Create another string (as copy) 
+ith_char=new string; ith_char.value = mystring.value; 
+
+// 4. Trim it to contain i-th character of our string. 
+ith_char.from=i; ith_char.length=1;
+
+// 5. we may want to test i-th character. String objects can be compared with text strings:
+on ith_char=="t"
+    // ... do something ...
+
+*** TIMER ***
+
+Show popup image:
+
+// Create image object:
+popupimg = new image (x=100 y=100 src="popup.gif")
+// Start image timer - it will trigger after 1 sec (1000 ms): 
+popupimg.timer=1000;
+
+// When image timer is elapsed:
+onf popupimg.timer==0
+    // for example, we could delete the image
+    delete popupimg
+
+Move image across the screen:
+
+// Create image object. 'speed' is user variable which contains sprite speed.
+// Animation timer is started also.
+sprite = new image (x=10 y=100 src="sprite.gif" speed=100 timer=speed)
+
+//  This event will trigger on image timer:
+on (sprite.timer==0)
+	sprite.animate=1
+on sprite.animate
+	// Move our image:
+    sprite.x=sprite.x+1
+    // Check if sprite not reached the screen border:
+    on sprite.x<600
+        // This will set timer once again for the next animation event:
+        sprite.timer=sprite.speed
+

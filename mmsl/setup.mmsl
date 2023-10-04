@@ -1,0 +1,688 @@
+/* Setup structure:
+   PAGE 1:
+     y=0   Analog(1)   Digital(2)
+     y=1   Letterbox(3)  Panscan(4)  Wide(5)
+     y=2   C/S-Video(6)  YPbPr(7)  RGB(8)
+     y=3   PAL(9)  NTSC(10)
+     y=4   OSD DVD-Menu DVD-Audio DVD-Sub
+     y=5   En(11) Ru(12) De(13) Fr(14) Es(15) Pl(16)
+
+     settings.user1	- OSD language
+     settings.user2 - Auto detect PAL/NTSC
+     settings.user3 - FS charset
+     settings.user4 - subtitle charset
+     settings.user5 - screensaver time, in seconds
+     settings.user6 - photo slide show time, in seconds
+     settings.user7 - sleep timer, in minutes
+*/
+
+kernel.print = "Entering SETUP..."
+
+setup_page = 1
+
+on setup_page == 1
+	delete .group != "mute" && .group != "scr"
+	screen.back = "img/setup1.jpg"
+	adjustment = 0
+
+	add image ssel1; ssel1.group = "setup"; ssel1.src = "img/yes.gif"
+	add image ssel2; ssel2.group = "setup"; ssel2.src = "img/yes.gif"
+	add image ssel3; ssel3.group = "setup"; ssel3.src = "img/yes.gif"
+	add image ssel4; ssel4.group = "setup"; ssel4.src = "img/yes.gif"
+	add image ssel5; ssel5.group = "setup"; ssel5.src = "img/yes.gif"
+	ssel4.visible = 0
+	ssel5.visible = 0
+
+	add rect langrect
+		langrect.group = "setup"
+		langrect.width = 109
+		langrect.height = 21
+		langrect.backcolor = colors.yellowback
+		langrect.color = -1
+		langrect.round = 4
+		langrect.visible = 0
+
+	load_settings = 1
+
+on setup_page == 2
+	delete .group != "mute" && .group != "scr"
+	screen.update = "now"
+	screen.back = "img/setup2.jpg"
+
+	on display_setup_line != ""
+		add text s2text
+			s2text.group = "setup"
+			s2text.x = 70
+			s2text.y = setup_line_i
+			s2text.color = colors.yellow
+			s2text.value = display_setup_line
+			setup_line_i = setup_line_i + s2text.height
+
+	setup_line_i = 115
+	display_setup_line = "Auto PAL/NTSC detect for video: "
+
+	add text s2text1
+		s2text1.group = "setup"
+		s2text1.x = s2text.x + s2text.width
+		s2text1.y = s2text.y
+		s2text1.color = colors.white
+
+	display_setup_line = "Filesystem charset: "
+
+	add text s2text2
+		s2text2.group = "setup"
+		s2text2.x = s2text.x + s2text.width
+		s2text2.y = s2text.y
+		s2text2.color = colors.white
+
+	display_setup_line = "Subtitle file charset: "
+
+	add text s2text3
+		s2text3.group = "setup"
+		s2text3.x = s2text.x + s2text.width
+		s2text3.y = s2text.y
+		s2text3.color = colors.white
+
+	display_setup_line = "HD Component Out: "
+
+	add text s2text4
+		s2text4.group = "setup"
+		s2text4.x = s2text.x + s2text.width
+		s2text4.y = s2text.y
+		s2text4.color = colors.white
+
+	display_setup_line = "HQ Photo Viewer: "
+
+	add text s2text5
+		s2text5.group = "setup"
+		s2text5.x = s2text.x + s2text.width
+		s2text5.y = s2text.y
+		s2text5.color = colors.white
+
+	display_setup_line = "Photo Slide Show: "
+
+	add text s2text55
+		s2text55.group = "setup"
+		s2text55.x = s2text.x + s2text.width
+		s2text55.y = s2text.y
+		s2text55.color = colors.white
+
+	display_setup_line = "SATA/PATA HDD Speed (needs restart): "
+
+	add text s2text6
+		s2text6.group = "setup"
+		s2text6.x = s2text.x + s2text.width
+		s2text6.y = s2text.y
+		s2text6.color = colors.white
+
+	display_setup_line = "Screen Saver: "
+
+	add text s2text7
+		s2text7.group = "setup"
+		s2text7.x = s2text.x + s2text.width
+		s2text7.y = s2text.y
+		s2text7.color = colors.white
+
+	display_setup_line = "Sleep Timer: "
+
+	add text s2text8
+		s2text8.group = "setup"
+		s2text8.x = s2text.x + s2text.width
+		s2text8.y = s2text.y
+		s2text8.color = colors.white
+
+	load_settings = 2
+
+on setup_page != 0
+	sel_id = -1
+	set_sel_id = -1
+
+	add rect srect
+		srect.group = "setup"
+		srect.width = 80
+		srect.height = 25
+		srect.backcolor = -1
+		srect.color = colors.yellow
+		srect.round = 5
+		srect.linewidth = 2
+
+on setup_page == 1
+	setup_y = 0
+	setup_x = 0
+
+on setup_page == 2
+	setup_y = 0
+	sel_id = 20
+
+on cancel_setup == 1
+	cancel_setup = 0
+	setup = 0
+	delete .group != "mute" && .group != "scr"
+	//screen.back = ""
+
+/////// load settings
+on settings.audioout == "analog"
+	on load_settings == 1
+		sel_id = 1
+on settings.audioout == "digital"
+	on load_settings == 1
+		sel_id = 2
+on settings.tvtype == "letterbox"
+	on load_settings == 1
+		sel_id = 3
+on settings.tvtype == "panscan"
+	on load_settings == 1
+		sel_id = 4
+on settings.tvtype == "wide"
+	on load_settings == 1
+		sel_id = 5
+on settings.tvout == "composite"
+	on load_settings == 1
+		sel_id = 6
+on settings.tvout == "ypbpr"
+	on load_settings == 1
+		sel_id = 7
+on settings.tvout == "rgb"
+	on load_settings == 1
+		sel_id = 8
+on settings.tvstandard == "pal"
+	on load_settings == 1
+		sel_id = 9
+on settings.tvstandard == "ntsc"
+	on load_settings == 1
+		sel_id = 10
+
+num_charsets = 2
+
+on settings.tvstandard != "pal" && settings.tvstandard != "ntsc"
+	on load_settings == 2
+		settings.user2 = 0
+		s2text1.color = colors.lightgrey
+
+on settings.user2 == 0
+	on load_settings == 2
+		s2text1.value = "No"
+on settings.user2 == 1
+	on load_settings == 2
+		s2text1.value = "Yes"
+on settings.user3 == 0
+	on load_settings == 2
+		s2text2.value = "Win/ISO"
+on settings.user3 == 1
+	on load_settings == 2
+		s2text2.value = "KOI8-R"
+on settings.user4 == 0
+	on load_settings == 2
+		s2text3.value = "Win/ISO"
+on settings.user4 == 1
+	on load_settings == 2
+		s2text3.value = "KOI8-R"
+
+on settings.tvstandard == "pal" || settings.tvstandard == "ntsc"
+	on load_settings == 2
+		s2text4.value = "Off"
+on settings.tvstandard == "480p"
+	on load_settings == 2
+		s2text4.value = "480P"
+on settings.tvstandard == "576p"
+	on load_settings == 2
+		s2text4.value = "576P"
+on settings.tvstandard == "720p"
+	on load_settings == 2
+		s2text4.value = "720P"
+on settings.tvstandard == "1080i"
+	on load_settings == 2
+		s2text4.value = "1080i"
+
+on settings.hq_jpeg == 0
+	on load_settings == 2
+		s2text5.value = "No"
+on settings.hq_jpeg == 1
+	on load_settings == 2
+		s2text5.value = "Yes"
+
+on settings.hdd_speed == "fastest"
+	on load_settings == 2
+		s2text6.value = "Fastest"
+on settings.hdd_speed == "limited"
+	on load_settings == 2
+		s2text6.value = "Limited"
+on settings.hdd_speed == "slow"
+	on load_settings == 2
+		s2text6.value = "Slow"
+
+on settings.user5 < 60
+	on load_settings == 2
+		set_sel_id = -1
+		s2text7.value = settings.user5 + " Secs"
+on settings.user5 == 60
+	on load_settings == 2
+		set_sel_id = -1
+		s2text7.value = "1 Min"
+on settings.user5 > 60
+	on load_settings == 2
+		set_sel_id = -1
+		s2text7.value = (settings.user5 / 60) + " Mins"
+on settings.user5 == 0
+	on load_settings == 2
+		s2text7.value = "Off"
+
+on settings.user6 > 0
+	on load_settings == 2
+		set_sel_id = -1
+		s2text55.value = settings.user6 + " Seconds"
+on settings.user6 == 0
+	on load_settings == 2
+		s2text55.value = "Off"
+
+on settings.user7 > 0
+	on load_settings == 2
+		set_sel_id = -1
+		s2text8.value = settings.user7 + " Mins"
+on settings.user7 == 0
+	on load_settings == 2
+		s2text8.value = "Off"
+////// move cursor
+on osd == 0
+	on pad.key == "right"
+		smove_x = 1
+	on pad.key == "left"
+		smove_x = -1
+	on pad.key == "up"
+		smove_y = -1
+	on pad.key == "down"
+		smove_y = 1
+	on pad.key == "enter"
+		set_sel = 1
+		set_sel_id = sel_id
+
+	on pad.key == "return"
+		settings.command = "defaults"
+		screen.tvout = settings.tvout
+		screen.tvstandard = settings.tvstandard
+		setup_page = setup_page
+
+////////////////////////////
+// OSD Info:
+on pad.key == "osd"
+	do_setup_osd = 1
+
+on osd == 0
+	on do_setup_osd == 1
+		do_setup_osd = 0
+		do_osd = 1
+
+on osd == 1
+	on do_setup_osd == 1
+		do_setup_osd = 0
+		cancel_osd = 1
+	on pad.key == "enter"
+		cancel_osd = 1
+
+	on osd_draw_header == 1
+		osdback.backcolor = colors.lightblueback
+		osdhdr.backcolor = osdback.backcolor
+		osdhdr.value = "Player Information"
+	
+	on osd_draw_main == 1
+		osd_ix = osdback.x
+		screen.halign = "center"
+		screen.font = msgfont
+		setup_print_osd = "*** SigmaPlayer Firmware (Technosonic version) ***"
+		setup_print_osd = "Copyright (c) SigmaPlayer Team, 2010."
+		screen.halign = "left"
+		osd_ix = osd_x
+		osd_iy = osd_iy + osd_h
+		setup_print_osd = "Firmware version"
+		setup_print_osd = "MMSL version"
+		setup_print_osd = "Chip version"
+		setup_print_osd = "Core frequency"
+		setup_print_osd = "Available memory"
+		setup_print_osd = "FLASH memory"
+		
+		osd_iy = osd_y + osd_h * 5
+		osd_ix = osd_ix + 190
+		setup_print_osd = ": " + kernel.firmware_version
+		setup_print_osd = ": " + kernel.mmsl_version
+		setup_print_osd = ": " + kernel.chip
+		setup_print_osd = ": " + kernel.frequency + " MHz"
+		filesize_value = kernel.free_memory
+		setup_print_osd = ": " + filesize_string
+		filesize_value = kernel.flash_memory
+		setup_print_osd = ": " + filesize_string
+
+		screen.font = font1
+	
+	on setup_print_osd != ""
+		print_osd = setup_print_osd
+		osd_iy = osd_iy + osd_h
+
+///////// pages:
+on setup_page == 1
+	on pad.key == "next"
+		cancel_osd = 1
+		setup_page = setup_page + 1
+on setup_page == 2
+	on pad.key == "prev"
+		cancel_osd = 1
+		setup_page = setup_page - 1
+
+on setup_page == 1
+	on (setup_y == 0 || setup_y == 3) && setup_x + smove_x >= 0 && setup_x + smove_x <= 1
+		on smove_x != 0
+			setup_x = setup_x + smove_x
+	on (setup_y == 1 || setup_y == 2) && setup_x + smove_x >= 0 && setup_x + smove_x <= 2
+		on smove_x != 0
+			setup_x = setup_x + smove_x
+	on setup_y == 4  && setup_x + smove_x >= 0 && setup_x + smove_x <= 3
+		on smove_x != 0
+			setup_x = setup_x + smove_x
+	on setup_y == 5  && setup_x + smove_x >= 0 && setup_x + smove_x <= 5
+		on smove_x != 0
+			setup_x = setup_x + smove_x
+	// save lang.type selection
+	on setup_y == 4
+		on smove_y == 1
+			slang_setup_x = setup_x
+			setup_y = 5
+			setup_x = 0
+			smove_y = 0
+	on setup_y == 5
+		on smove_y == -1
+			setup_y = 4
+			setup_x = slang_setup_x
+			smove_y = 0
+	on setup_y + smove_y >= 0 && setup_y + smove_y <= 5
+		on smove_y != 0
+			setup_y = setup_y + smove_y
+			setup_x = 0
+
+	// set selection
+	on setup_y == 0 || setup_y == 1
+		on set_sel == 1
+			sel_id = 1 + setup_y * 2 + setup_x
+	on setup_y == 2 || setup_y == 3
+		on set_sel == 1
+			sel_id = 6 + (setup_y - 2) * 3 + setup_x
+	on setup_y == 5
+		on set_sel == 1
+			sel_id = 11 + setup_x
+
+	// set cursor
+	on setup_y == 0
+		on setup_x >= 0
+			srect.width = 59
+			srect.height = 25
+			srect.x = 109 + 203 * setup_x
+			srect.y = 115
+	on setup_y >= 1 && setup_y <= 2
+		on setup_x >= 0
+			srect.width = 77 - (setup_x * 11)
+			srect.height = 25
+			srect.x = 67 + 160 * setup_x
+			srect.y = 199 + 62 * (setup_y - 1)
+	on setup_y == 3
+		on setup_x >= 0
+			srect.width = 50
+			srect.height = 25
+			srect.x = 163 + 145 * setup_x
+			srect.y = 312
+	on setup_y == 4
+		on setup_x >= 0
+			srect.width = 113
+			srect.height = 25
+			srect.x = 59 + 120 * setup_x
+			srect.y = 370
+			langrect.x = srect.x + 2
+			langrect.y = srect.y + 2
+			langrect.visible = 1
+			slang = setup_x
+	on setup_y != 4 && setup_y != 5
+		langrect.visible = 0
+		ssel5.visible = 0
+	on setup_y == 5
+		on setup_x >= 0
+			srect.width = 50
+			srect.height = 36
+			srect.x = 121 + 62 * setup_x
+			srect.y = 406
+			langrect.visible = 1
+
+on setup_page == 2
+	// set cursor
+	on setup_y >= 0
+		srect.width = 430
+		srect.height = 25
+		srect.x = 65
+		srect.y = 115 + s2text.height * setup_y
+
+	on setup_y + smove_y >= 0 && setup_y + smove_y <= 8
+		on smove_y != 0
+			setup_y = setup_y + smove_y
+			sel_id = 20 + setup_y
+			set_tv = ""
+
+on slang == 0
+	sel_id = settings.user1 + 11 // OSD lang
+on slang == 1
+	set_lang = settings.dvd_lang_menu
+on slang == 2
+	set_lang = settings.dvd_lang_audio
+on slang == 3
+	set_lang = settings.dvd_lang_spu
+
+on set_lang == "en"
+	sel_id = 11
+on set_lang == "ru"
+	sel_id = 12
+on set_lang == "de"
+	sel_id = 13
+on set_lang == "fr"
+	sel_id = 14
+on set_lang == "es"
+	sel_id = 15
+on set_lang == "pl"
+	sel_id = 16
+
+// set selection cursor
+on sel_id == 1
+	scur_x = 114; scur_y = 101;
+	draw_sel = 1
+on sel_id == 2
+	scur_x = 319; scur_y = 101;
+	draw_sel = 1
+on sel_id >= 3 && sel_id <= 5
+	scur_x = 82 + 153 * (sel_id-3); scur_y = 188;
+	draw_sel = 2
+on sel_id >= 6 && sel_id <= 8
+	scur_x = 80 + 154 * (sel_id-6); scur_y = 251;
+	draw_sel = 3
+on sel_id >= 9 && sel_id <= 10
+	scur_x = 162 + 145 * (sel_id-9); scur_y = 303;
+	draw_sel = 4
+on sel_id >= 11 && sel_id <= 16
+	scur_x = 120 + 62 * (sel_id-11); scur_y = 398;
+	draw_sel = 5
+
+// draw selection
+on draw_sel == 1
+	ssel1.x = scur_x; ssel1.y = scur_y
+on draw_sel == 2
+	ssel2.x = scur_x; ssel2.y = scur_y
+on draw_sel == 3
+	ssel3.x = scur_x; ssel3.y = scur_y
+on draw_sel == 4
+	ssel4.x = scur_x; ssel4.y = scur_y
+	ssel4.visible = 1;
+on draw_sel == 5
+	ssel5.x = scur_x; ssel5.y = scur_y	
+	ssel5.visible = 1
+
+///////////////////
+// save settings
+on set_sel_id == 1
+	settings.audioout = "analog"
+on set_sel_id == 2
+	settings.audioout = "digital"
+on set_sel_id == 3
+	settings.tvtype = "letterbox"
+	allow_balloons = 0
+	screen.tvout = settings.tvout
+	allow_balloons = 1
+on set_sel_id == 4
+	settings.tvtype = "panscan"
+	allow_balloons = 0
+	screen.tvout = settings.tvout
+	allow_balloons = 1
+on set_sel_id == 5
+	settings.tvtype = "wide"
+	allow_balloons = 0
+	screen.tvout = settings.tvout
+	allow_balloons = 1
+on set_sel_id == 6
+	settings.tvout = "composite"
+	screen.tvout = settings.tvout
+	saved_tvout = settings.tvout
+on set_sel_id == 7
+	settings.tvout = "ypbpr"
+	screen.tvout = settings.tvout
+	saved_tvout = settings.tvout
+on set_sel_id == 8
+	settings.tvout = "rgb"
+	screen.tvout = settings.tvout
+	saved_tvout = settings.tvout
+on set_sel_id == 9
+	settings.tvstandard = "pal"
+	screen.tvstandard = settings.tvstandard
+on set_sel_id == 10
+	settings.tvstandard = "ntsc"
+	screen.tvstandard = settings.tvstandard
+on slang == 0
+	on set_sel_id >= 11 && set_sel_id <= 16
+		settings.user1 = set_sel_id - 11
+		set_lang = 1
+		screen.font = font1
+	sel_id = settings.user1 + 11 // OSD lang
+on slang != 0
+	on set_sel_id == 11
+		save_lang = "en"
+	on set_sel_id == 12
+		save_lang = "ru"
+	on set_sel_id == 13
+		save_lang = "de"
+	on set_sel_id == 14
+		save_lang = "fr"
+	on set_sel_id == 15
+		save_lang = "es"
+	on set_sel_id == 16
+		save_lang = "pl"
+on slang == 1
+	on save_lang != ""
+		settings.dvd_lang_menu = save_lang
+on slang == 2
+	on save_lang != ""
+		settings.dvd_lang_audio = save_lang
+on slang == 3
+	on save_lang != ""
+		settings.dvd_lang_spu = save_lang
+
+on settings.tvstandard == "pal" || settings.tvstandard == "ntsc"
+	on set_sel_id == 20
+		settings.user2 = 1 - settings.user2
+		load_settings = 2
+
+on set_sel_id == 21
+	settings.user3 = settings.user3 + 1
+	load_settings = 2
+	set_lang = 1
+
+on set_sel_id == 22
+	settings.user4 = settings.user4 + 1
+	load_settings = 2
+	set_lang = 1
+
+on settings.tvstandard == "pal" || settings.tvstandard == "ntsc" || settings.tvstandard == ""
+	on set_sel_id == 23
+		set_tv = "480p"
+on settings.tvstandard == "480p"
+	on set_sel_id == 23
+		set_tv = "576p"
+on settings.tvstandard == "576p"
+	on set_sel_id == 23
+		set_tv = "720p"
+on settings.tvstandard == "720p"
+	on set_sel_id == 23
+		set_tv = "1080i"
+on settings.tvstandard == "1080i"
+	on set_sel_id == 23
+		set_tv = "pal"
+
+on set_sel_id == 24
+	settings.hq_jpeg = settings.hq_jpeg + 1
+	load_settings = 2
+
+on set_sel_id == 26
+	settings.hdd_speed = "next"
+	load_settings = 2
+
+on settings.user5 < 900
+	on set_sel_id == 27
+		u = settings.user5
+		// 30 45 60 120 180 300 600 900
+		settings.user5 = u + 15 + (u == 0) * 15 + (u > 45) * 45 + (u > 120) * 60 + (u > 180) * 180
+		load_settings = 2
+on settings.user5 >= 900
+	on set_sel_id == 27
+		settings.user5 = 0
+		load_settings = 2
+
+on settings.user6 < 60
+	on set_sel_id == 25
+		u = settings.user6
+		// 1 2 3 5 10 15 20 30 60
+		settings.user6 = u + 1 + (u == 3) + (u >= 5) * 4 + (u > 15) * 5 + (u > 20) * 20
+		load_settings = 2
+on settings.user6 >= 60
+	on set_sel_id == 25
+		settings.user6 = 0
+		load_settings = 2
+
+on settings.user7 < 120
+	on set_sel_id == 28
+		u = settings.user7
+		// 15, 30, 45, 60, 90, 120
+		settings.user7 = u + 15 + (u > 45) * 15
+		load_settings = 2
+on settings.user7 >= 120
+	on set_sel_id == 28
+		settings.user7 = 0
+		load_settings = 2
+
+on set_tv == "pal"
+	settings.tvout = saved_tvout
+	s2text1.color = colors.white
+on set_tv != "pal" && set_tv != ""
+	settings.tvout = "ypbpr"
+	settings.user2 = 0
+	s2text1.color = colors.lightgrey
+on set_tv != ""
+	set_sel_id = -1
+	settings.tvstandard = set_tv
+	load_settings = 2
+	show_timer_balloon = "wait"
+	screen.update = "now"
+	s2text4.timer = 1000
+
+on set_tv != ""
+	on s2text4.timer == 0
+		screen.tvout = settings.tvout
+		screen.tvstandard = settings.tvstandard
+
+on set_tv == ""
+	s2text4.timer = 0
+	show_balloon = ""
+
+on settings.user3 >= num_charsets
+   	settings.user3 = 0
+on settings.user4 >= num_charsets
+   	settings.user4 = 0

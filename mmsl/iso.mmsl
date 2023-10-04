@@ -1,0 +1,111 @@
+lib_back = "img/lib.jpg"
+screen.back = lib_back
+
+show_preview = ""
+pad.clear = "all"
+delete .group != "mute" && .group != "scr"
+pad.display = "LoAd"
+adjustment = 0
+screensaver = 0
+sleep_timer = 0
+
+on drive.mediatype == "iso" || drive.mediatype == "mixed"
+	on explorer.folder == "/cdrom"
+		on display_pad == 1
+			saved_display_pad = "ISO"
+	on explorer.folder == "/hdd"
+		on display_pad == 1
+			saved_display_pad = "Hdd"
+	on explorer.drive_letter != ""
+		on display_pad == 1
+			saved_display_pad = explorer.drive_letter + "_  Hdd"
+on drive.mediatype == "audio"
+	on display_pad == 1
+		show_timer_balloon = "cd"
+on drive.mediatype == "audio" || drive.mediatype == "mixed"
+	on display_pad == 1
+		pad.set = "cd"
+on display_pad == 1
+	pad.display = saved_display_pad	
+
+search_title = "Time Search"
+filesize_string = ""
+filedate_string = ""
+
+iso_info = 1
+
+do_init = 1
+on redraw_iso == 0
+	on do_init == 1
+		iso_init = 1
+
+display_pad = 1
+
+on drive.mediatype == "iso" || drive.mediatype == "mixed" || drive.mediatype == "audio"
+	on iso_init == 1
+		explorer.folder = "/"
+on iso_init == 1
+	kernel.print = "Browser Init (" + iso_charset + ")..."
+	explorer.charset = iso_charset
+	explorer.target = "/playlist"
+
+	explorer.filter = "up,track,folder,dvd,file"
+	explorer.sort = "normal"
+
+	music_mask = "*.mp3,*.wav,*.ogg,*.mp2,*.mp1,*.mpa,*.ac3,"
+	movie_mask = "*.avi,*.mpeg,*.mpg,*.m1v,*.m2v,*.dat,*.vob,*.divx,*.mp4,*.3gp,"
+	pics_mask = "*.jpg,*.jpeg,"
+	subt_mask = "*.sub,*.srt,*.ssa,*.txt"
+
+	flag_music = 1
+	flag_movie = 1
+	flag_pics = 1
+	flag_subt = 0
+
+	flag_playlist = 0
+	playlist_edit = 0
+	play_mode = "all"
+
+	do_play_audio = 0
+	do_play_video = 0
+	do_show_photo = 0
+
+	playing = 0
+	do_play_all = 0
+	play_cur_pos = -1
+	list_offset = 0
+
+	show_timer_balloon = "wait"
+	screen.update = "now"
+
+	explorer.command = "update"
+
+////////////////////////////
+// handle file types:
+on flag_movie >= 0 || flag_music >= 0 || flag_pics >= 0 || flag_subt >= 0
+	explorer.mask1 = ""
+	explorer.mask2 = ""
+	explorer.mask3 = ""
+	explorer.mask4 = ""
+	explorer.mask5 = "romfs.bin"
+	flag_change_mask = 1
+on flag_movie == 1
+	on flag_change_mask = 1
+		explorer.mask1 = movie_mask
+on flag_music == 1
+	on flag_change_mask = 1
+		explorer.mask2 = music_mask
+on flag_pics == 1
+	on flag_change_mask = 1
+		explorer.mask3 = pics_mask
+on flag_subt == 1
+	on flag_change_mask = 1
+		explorer.mask4 = subt_mask
+
+
+include "list.mmsl"
+include "iso-menu.mmsl"
+include "iso-info.mmsl"
+include "iso-play.mmsl"
+include "iso-photo.mmsl"
+

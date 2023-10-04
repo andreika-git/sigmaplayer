@@ -1,0 +1,27 @@
+
+1) How to toggle variable states on event:
+
+/////// This is WRONG way because of cross-triggering:
+
+on settings.tvstandard == "pal"
+	on pad.key == "vmode"
+		settings.tvstandard = "ntsc"
+
+on settings.tvstandard == "ntsc"
+	on pad.key == "vmode"
+		settings.tvstandard = "pal"
+
+/////// This is RIGHT way:
+
+on pad.key == "vmode"
+	toggle_tvstandard = 1
+
+on settings.tvstandard == "ntsc"
+	on toggle_tvstandard == 1
+		toggle_tvstandard = 0
+		settings.tvstandard = "pal"
+
+on settings.tvstandard == "pal"
+	on toggle_tvstandard == 1
+		toggle_tvstandard = 0
+		settings.tvstandard = "ntsc"

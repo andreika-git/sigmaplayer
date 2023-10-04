@@ -1,0 +1,6 @@
+- About...
+  * This documentation is a part of Sigma Player Firmware Project.
+  *
+  * It consists of two parts:
+  * - ::MMSL Language Reference::
+  * - ::Sigma Player Library::
